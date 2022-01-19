@@ -6,7 +6,7 @@ setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. M
 
 ## IMPORTANT MESSAGE: YOU NEED TO RUN the treatment script
 # Needed values from the script "SpaTemp_HOBOS_treatment.R"
-source("SpaTemp_HOBOS_treatment.R")
+## RUN BEFORE PROCEEDING WITH THIS ONE
 
 ## You need to run the previous script in order to built the HOBOS dataset (a list with the HOBOS info for each river)
 HOBOS_sites
@@ -162,10 +162,16 @@ dev.off()
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # Correlation for each approximation 
-corrmorant::corrmorant(NonW_ST_directed_out,rescale = "by_range")
-corrmorant::corrmorant(WEIG_ST_directed_out,rescale = "by_range")
-corrmorant::corrmorant(Un_NonW_ST_out,rescale = "by_range")
-corrmorant::corrmorant(Un_WEIG_ST_out,rescale = "by_range")
+png(filename ="Figure/Data_treat/Corrplots_Indiv.png", 
+    width = 750*6, height = 700*6, 
+    units = "px",res = 300) 
+grid.arrange(
+corrmorant::corrmorant(NonW_ST_directed_out,rescale = "by_range"),
+corrmorant::corrmorant(WEIG_ST_directed_out,rescale = "by_range"),
+corrmorant::corrmorant(Un_NonW_ST_out,rescale = "by_range"),
+corrmorant::corrmorant(Un_WEIG_ST_out,rescale = "by_range"),
+nrow=2,ncol=2)
+dev.off()
 
 names_approxim <- c("Dir_NonW_ST", 
                     "Dir_WEIG_ST",
@@ -218,38 +224,41 @@ corrmorant::corrmorant(cbind(NonW_ST_directed_out[,3:6],
                              WEIG_ST_directed_out[,3:6],
                              Un_NonW_ST_out[,3:6],
                              Un_WEIG_ST_out[,3:6]),rescale = "by_range")
+
+png(filename ="Figure/Data_treat/Corrplots_Per_Index.png", 
+    width = 750*6, height = 700*6, 
+    units = "px",res = 300) 
+grid.arrange(
 # ST connectivity
 corrmorant::corrmorant(cbind(NonW_ST_directed_out[,3],
                              WEIG_ST_directed_out[,3],
                              Un_NonW_ST_out[,3],
-                             Un_WEIG_ST_out[,3]),rescale = "by_range")
+                             Un_WEIG_ST_out[,3]),rescale = "by_range"),
 # ST Oclo
 corrmorant::corrmorant(cbind(NonW_ST_directed_out[,4],
                              WEIG_ST_directed_out[,4],
                              Un_NonW_ST_out[,4],
-                             Un_WEIG_ST_out[,4]),rescale = "by_range")
+                             Un_WEIG_ST_out[,4]),rescale = "by_range"),
 
 # ST Allclo
 corrmorant::corrmorant(cbind(NonW_ST_directed_out[,5],
                              WEIG_ST_directed_out[,5],
                              Un_NonW_ST_out[,5],
-                             Un_WEIG_ST_out[,5]),rescale = "by_range")
+                             Un_WEIG_ST_out[,5]),rescale = "by_range"),
 
 # ST Bet
 corrmorant::corrmorant(cbind(NonW_ST_directed_out[,6],
                              WEIG_ST_directed_out[,6],
                              Un_NonW_ST_out[,6],
-                             Un_WEIG_ST_out[,6]),rescale = "by_range")
+                             Un_WEIG_ST_out[,6]),rescale = "by_range"),
+nrow=2,ncol=2)
+dev.off()
+
 
 four_approxim <- list(NonW_ST_directed_out, 
                       WEIG_ST_directed_out,
                       Un_NonW_ST_out, 
                       Un_WEIG_ST_out)
-
-legend_plots<- get_legend(ggplot(NonW_ST_directed_out)+
-                      geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),shape=21, size=2)+
-                      scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
-                      theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical"))
 
 for (a in 1:length(four_approxim)) {
 png(filename =paste("Figure/Data_treat/",names_approxim[a],".png"), 
@@ -296,14 +305,17 @@ grid.arrange(
     ylab("ST Betwenness")+
     theme_classic()+theme(legend.position="none"),
   
-  legend_plots, nrow=3 ,ncol=2 ,top=names_approxim[a])
+  get_legend(ggplot(NonW_ST_directed_out)+
+               geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),shape=21, size=2)+
+               scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+               theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical")),
+  nrow=3 ,ncol=2 ,top=names_approxim[a])
 dev.off()
 }
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 3. Comparing and Calculating OLD HOBOS values ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
 source("Old_HOBOS_calculation.R")
 Old_HOBOS_comb
 
@@ -359,7 +371,7 @@ dev.off()
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 4. Correlation plot with all values together to compare ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-png(filename =paste("Figure/Data_treat/CorPlot.png"), 
+png(filename =paste("Figure/Data_treat/CorPlot_STcon_OldHOB.png"), 
     width = 800*4, height = 600*4, 
     units = "px",res = 300)
 corrmorant::corrmorant(cbind("NonW_Dir_con"=NonW_ST_directed_out$NonW_Dir_con,
