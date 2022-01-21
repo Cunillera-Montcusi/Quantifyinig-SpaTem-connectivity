@@ -377,7 +377,7 @@ grid.arrange(
 dev.off()
 
 # 5.3. Matching with Bray & Jaccard ####
-output <- matrix(nrow=37)
+output <- matrix(nrow=length(unlist(HOB_BDD_match_matrix$BrayCurtis)))
 for (lis_elem in 1:length(HOB_BDD_match_matrix)) {
   out <- c()
   for (river in 1:length(HOB_BDD_match_matrix$BrayCurtis)) {

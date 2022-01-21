@@ -1914,7 +1914,6 @@ Un_ST_directed_Allcloseness_rivers <- list(out_Matrix_LIST[[1]][[3]],out_Matrix_
                                            out_Matrix_LIST[[4]][[3]],out_Matrix_LIST[[5]][[3]],
                                            out_Matrix_LIST[[6]][[3]],out_Matrix_LIST[[7]][[3]])
 
-out_Matrix_LIST[[1]][[4]][1:513,1:15] <- 0
 
 Un_ST_directed_betweennes_rivers <- list(out_Matrix_LIST[[1]][[4]],out_Matrix_LIST[[2]][[4]],out_Matrix_LIST[[3]][[4]],
                                          out_Matrix_LIST[[4]][[4]],out_Matrix_LIST[[5]][[4]],

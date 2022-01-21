@@ -5,7 +5,7 @@
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
 source("SpaTemp_HOBOS_function.R")
 
-Sites <- read.csv("Longlat_Rius.csv", header = T, sep = ";")
+Sites <- read.csv("Raw_HOBOS_Database/Longlat_Rius.csv", header = T, sep = ";")
 colnames(Sites) <- c("Riera", "Codi_HOBO","Latitud","Longitud")
 
 #Correction for matching HOBOS -- collecting the  coordinates of the HOBOS that we have  
@@ -20,13 +20,13 @@ plot(Sites$Latitud, Sites$Longitud)
 
 #Charge HOBOS database
 HOBOS_sites <- list(
-  read.csv("CA_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("M_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("R_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("SA_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("SC_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("T_HOBOS_data.csv", header = T, sep = ";"),
-  read.csv("VH_HOBOS_data.csv", header = T, sep = ";"))
+  read.csv("Raw_HOBOS_Database/CA_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/M_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/R_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/SA_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/SC_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/T_HOBOS_data.csv", header = T, sep = ";"),
+  read.csv("Raw_HOBOS_Database/VH_HOBOS_data.csv", header = T, sep = ";"))
 
 # PLotting HOBOS altogether (make the plot window bigger)
 par(mfrow=c(3,3))
@@ -352,7 +352,6 @@ Un_WEIG_ST_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,Un_WEIG_ST_output)%>%
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 5. Final values__________________________________________________________________ ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
 NonW_ST_matrix_out_out
 WEIG_ST_matrix_out_out
 Un_NonW_ST_matrix_out_out
