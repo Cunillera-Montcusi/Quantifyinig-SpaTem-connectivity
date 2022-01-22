@@ -327,13 +327,13 @@ for (river in 1:length(HOBOS_dataset)) {
     # collapse all the 1, 0 that we have been adding to the main ST matrix
     gen_connections <-seq(1,c(length(colnames(HOBOS_dataset[[river]]))-1),1)+w*numn_nodes
     
-    # Folloing the "gen_connections" we just "sum" all the present (spatial) and past (temporal) links of the main matrix.  
+    # Following the "gen_connections" we just "sum" all the present (spatial) and past (temporal) links of the main matrix.  
     out <- ST_matrix_rivers[[river]][gen_connections[1]:gen_connections[length(gen_connections)],
                                      gen_connections[1]:gen_connections[length(gen_connections)]]+
       ST_matrix_rivers[[river]][gen_connections[1]:gen_connections[length(gen_connections)],
                                 c(gen_connections[1]+numn_nodes):c(gen_connections[length(gen_connections)]+numn_nodes)]
     
-    # Finally we summ all this values in the "common" simple matrix. Here is wher we collapse (sum) all the numbers in one matrix. 
+    # Finally we summ all this values in the "common" simple matrix. Here is where we collapse (sum) all the numbers in one matrix. 
     # The total values should be for a "full" permanent (so always stable links 1 to 1) site the number of total days*2.
     out_out <- out_out+out
     
@@ -407,12 +407,12 @@ for (river in 1:length(HOBOS_dataset)) {
   # considering its number of connections. As I am "node 1" my number of connections will be higher tan "node 10". IF WE FOLLOW THE RIVER DOWNSTREAM!
   leng_correct <- seq(numn_nodes,1,-1)
   
-  # Here we do a several of sum to obtain the indicator: 
-  ## First we do an "apply" to sum all the rows. WHich means that we summ all spatial and temporal connections. 
+  # Here we do a several sums to obtain the indicator: 
+  ## First we do an "apply" to sum all the rows. Which means that we sum all spatial and temporal connections. 
   ## - This number, represents de total amount of times that a node is connected spatially and temporally (max value is num_nodes*2-1)
   ## - We consider that the node can not be connected with itself spatially (this why we have a -1).
-  ## Second, we summ all the same nodes together. We summ the results of the previous "apply" to obtain the sum of total amount of times that a node
-  ## will be connected to all his possible neighbours through time. 
+  ## Second, we sum all the same nodes together. We sum the results of the previous "apply" to obtain the sum of total amount of times that a node
+  ## will be connected to all his possible neighbors through time. 
   ## Third, we correct for the "leng_correct" and make "upstream" values comparable with "downstream" 
   
   out <- foreach(nodes=1:numn_nodes)%dopar%{
