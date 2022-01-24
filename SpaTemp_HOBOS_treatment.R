@@ -90,16 +90,19 @@ date_correct_Autumn
 ## All hobos begun at the same date
 date_HOBOS <- "2018-07-26"
 #Beginning
-bd <- as.Date(date_HOBOS)
+bd <- as.Date(date_correct_Summer)
 #End
 ed <- as.Date(date_correct_Autumn)
 
 # Difference in number of days will correspond to the number of rows to be selected. 
-time_window <- as.numeric(difftime(ed, bd, units = "days")) 
+time_window_beg <- as.numeric(difftime(bd+1, date_HOBOS, units = "days")) 
+time_window_beg <- round(time_window_beg)
+time_window_end <- as.numeric(difftime(ed, date_HOBOS, units = "days"))
+time_window_end <- round(time_window_end)
+
 for (site in 1:length(HOBOS_sites)) {
-  HOBOS_sites[[site]] <- HOBOS_sites[[site]][1:time_window,]
+  HOBOS_sites[[site]] <- HOBOS_sites[[site]][time_window_beg:time_window_end,]
 }
-HOBOS_sites
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 3. Calculation of ST indices ####
