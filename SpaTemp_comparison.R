@@ -260,15 +260,26 @@ four_approxim <- list(NonW_ST_directed_out,
                       Un_NonW_ST_out, 
                       Un_WEIG_ST_out)
 
+
 for (a in 1:length(four_approxim)) {
 png(filename =paste("Figure/Data_treat/",names_approxim[a],".png"), 
       width = 700*4, height = 600*4, 
-      units = "px",res = 300) 
+      units = "px",res = 300)
+
+  
+rows_filter <- unlist(c(four_approxim[[a]]%>%
+                          mutate(files=1:nrow(.))%>%
+                          group_by(ID)%>%
+                          mutate(maxim=max(DtoU), value=DtoU/maxim)%>%
+                          filter(value==1)%>%
+                          ungroup()%>%
+                          select(files)))
+    
 grid.arrange(
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,3],color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,3],color=ID),alpha=0.2, method = "lm",se = F)+
+  ggplot(data = four_approxim[[a]][-rows_filter,])+
+    geom_point(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
+    geom_line(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],color=ID),alpha=0.3, linetype=2)+
+    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],color=ID),alpha=0.2, method = "lm",se = F)+
     scale_fill_CUNILLERA(palette = "LGTBI")+
     scale_color_CUNILLERA(palette = "LGTBI")+
     xlab("HOBO relative position Upstream-Downstream")+
