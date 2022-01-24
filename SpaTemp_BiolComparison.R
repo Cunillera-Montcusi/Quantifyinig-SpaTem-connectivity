@@ -353,7 +353,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     scale_fill_CUNILLERA(palette = "LGTBI")+
     scale_color_CUNILLERA(palette = "LGTBI")+
     xlab(variable_x_name)+
-    labs(title=paste(variable_x_name,"vs","Richness"))+
+    labs(title=paste(variable_x_name,"vs","Shannon"))+
     theme_classic()+
     theme(legend.position="none")
 }
