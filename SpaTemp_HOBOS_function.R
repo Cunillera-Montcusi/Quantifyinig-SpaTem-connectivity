@@ -887,6 +887,9 @@ out_out <- out_out+out
 }
 
 # We save the collapsed matrix
+#out_out<- out_out/as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T)) # This two lines can be used if we want to homogenize the values of distance
+#diag(out_out) <- 0 # But we must bear in mind that this will mean that the different distances are then "not well considered" as we are dividing each 
+                    # cell for its distance between two parts - We are "suppressing the weighting". So doing the same as in a Non-Weigted 
 ST_matrix_out_out[[river]] <- out_out/c(length(HOBOS_dataset[[river]]$Day))
 
 # Following lines are just a plotting schema to obtain the graphic representation. 
@@ -1945,6 +1948,11 @@ for (river in 1:length(HOBOS_dataset)) {
     out_out_out[rows,] <- (out_out[rows,]+out_out[,rows])/2
   }
   out_out_out[lower.tri(out_out_out)] <- 0
+  #out_out_out <- out_out_out/as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+  # This line above can be used if we want to homogenize the values of distance. But we must bear in mind that this will mean that 
+  #the different distances are then "not well considered" as we are dividing each 
+  #cell for its distance between two parts - We are "suppressing the weighting". So doing the same as in a Non-Weigted 
+  
   Un_ST_matrix_out_out[[river]] <- out_out_out/c(length(HOBOS_dataset[[river]]$Day))
   
   # Following lines are just a plotting schema to obtain the graphic representation. 
