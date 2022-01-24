@@ -340,7 +340,7 @@ for (river in 1:length(HOBOS_dataset)) {
   }
   
   # We save the collapsed matrix
-  ST_matrix_out_out[[river]] <- out_out
+  ST_matrix_out_out[[river]] <- out_out/c(length(HOBOS_dataset[[river]]$Day))
   
   # Following lines are just a plotting schema to obtain the graphic representation. 
   # Note that the values are "scaled" to one for colours and sizes.
@@ -887,7 +887,7 @@ out_out <- out_out+out
 }
 
 # We save the collapsed matrix
-ST_matrix_out_out[[river]] <- out_out
+ST_matrix_out_out[[river]] <- out_out/c(length(HOBOS_dataset[[river]]$Day))
 
 # Following lines are just a plotting schema to obtain the graphic representation. 
 # Note that the values are "scaled" to one for colours and sizes.
@@ -1432,7 +1432,7 @@ for (river in 1:length(HOBOS_dataset)) {
    out_out_out[rows,] <- (out_out[rows,]+out_out[,rows])/2
   }
   out_out_out[lower.tri(out_out_out)] <- 0
-  Un_ST_matrix_out_out[[river]] <- out_out_out
+  Un_ST_matrix_out_out[[river]] <- out_out_out/c(length(HOBOS_dataset[[river]]$Day))
   
   # Following lines are just a plotting schema to obtain the graphic representation. 
   # Note that the values are "scaled" to one for colours and sizes.
@@ -1945,7 +1945,7 @@ for (river in 1:length(HOBOS_dataset)) {
     out_out_out[rows,] <- (out_out[rows,]+out_out[,rows])/2
   }
   out_out_out[lower.tri(out_out_out)] <- 0
-  Un_ST_matrix_out_out[[river]] <- out_out_out
+  Un_ST_matrix_out_out[[river]] <- out_out_out/c(length(HOBOS_dataset[[river]]$Day))
   
   # Following lines are just a plotting schema to obtain the graphic representation. 
   # Note that the values are "scaled" to one for colours and sizes.

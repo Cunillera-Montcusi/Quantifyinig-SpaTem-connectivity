@@ -90,7 +90,7 @@ date_correct_Autumn
 ## All hobos begun at the same date
 date_HOBOS <- "2018-07-26"
 #Beginning
-bd <- as.Date(date_correct_Summer)
+bd <- as.Date(date_HOBOS)
 #End
 ed <- as.Date(date_correct_Autumn)
 
