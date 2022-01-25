@@ -15,6 +15,7 @@ spat_temp_index <- function(HOBOS_dataset,
                             value_T_LINK=1,
                             value_NO_S_link=0,
                             value_NO_T_link=0,
+                            Network_variables=TRUE,
                             print.plots=TRUE,
                             print.directory){
   
