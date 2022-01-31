@@ -47,8 +47,8 @@ for (n in 1:length(NonW_ST_matrix_out_out)) {
   
   a <- t(NonW_ST_matrix_out_out[[n]])
   diag(a) <- 0
-  taula_out <- data.frame(x=scores(metaMDS(as.dist(a)))[,1],
-                          y=scores(metaMDS(as.dist(a)))[,2],
+  taula_out <- data.frame(x=scores(metaMDS(as.dist(a),distance = "euclidian"))[,1],
+                          y=scores(metaMDS(as.dist(a),distance = "euclidian"))[,2],
                           ID=Sites_list[[n]][,1],
                           DtoU=val_ups_dos)  
   NonW_ST_directed_MatrixOut <- rbind(NonW_ST_directed_MatrixOut,taula_out)
@@ -63,8 +63,8 @@ for (n in 1:length(WEIG_ST_matrix_out_out)) {
   
   a <- t(WEIG_ST_matrix_out_out[[n]])
   diag(a) <- 0
-  taula_out <- data.frame(x=scores(metaMDS(as.dist(a)))[,1],
-                          y=scores(metaMDS(as.dist(a)))[,2],
+  taula_out <- data.frame(x=scores(metaMDS(as.dist(a),distance = "euclidian"))[,1],
+                          y=scores(metaMDS(as.dist(a),distance = "euclidian"))[,2],
                           ID=Sites_list[[n]][,1],
                           DtoU=val_ups_dos)  
   WEIG_ST_MatrixOut <- rbind(WEIG_ST_MatrixOut,taula_out)
@@ -80,8 +80,8 @@ for (n in 1:length(Un_NonW_ST_matrix_out_out)) {
   
   a <- t(Un_NonW_ST_matrix_out_out[[n]])
   diag(a) <- 0
-  taula_out <- data.frame(x=scores(metaMDS(as.dist(a)))[,1],
-                          y=scores(metaMDS(as.dist(a)))[,2],
+  taula_out <- data.frame(x=scores(metaMDS(as.dist(a),distance = "euclidian"))[,1],
+                          y=scores(metaMDS(as.dist(a),distance = "euclidian"))[,2],
                           ID=Sites_list[[n]][,1],
                           DtoU=val_ups_dos)  
   Un_NonW_ST_MatrixOut <- rbind(Un_NonW_ST_MatrixOut,taula_out)
@@ -97,8 +97,8 @@ for (n in 1:length(Un_WEIG_ST_matrix_out_out)) {
   
   a <- t(Un_WEIG_ST_matrix_out_out[[n]])
   diag(a) <- 0
-  taula_out <- data.frame(x=scores(metaMDS(as.dist(a)))[,1],
-                          y=scores(metaMDS(as.dist(a)))[,2],
+  taula_out <- data.frame(x=scores(metaMDS(as.dist(a),distance = "euclidian"))[,1],
+                          y=scores(metaMDS(as.dist(a),distance = "euclidian"))[,2],
                           ID=Sites_list[[n]][,1],
                           DtoU=val_ups_dos)  
   Un_WEIG_ST_MatrixOut <- rbind(Un_WEIG_ST_MatrixOut,taula_out)
@@ -387,17 +387,26 @@ dev.off()
 png(filename =paste("Figure/Data_treat/CorPlot_STcon_OldHOB.png"), 
     width = 800*4, height = 600*4, 
     units = "px",res = 300)
-corrmorant::corrmorant(cbind("NonW_Dir_con"=NonW_ST_directed_out$NonW_Dir_con,
-                             "WEIG_Dir_con"=WEIG_ST_directed_out$WEIG_Dir_con,
-                             "Un_NonW_con"=Un_NonW_ST_out$Un_NonW_con,
-                             "Un_WEIG_con"=Un_WEIG_ST_out$Un_WEIG_con,
-                             Old_HOBOS_comb[,3:5]),rescale = "by_range")
+corrmorant::corrmorant(cbind("STcon 1.1."=NonW_ST_directed_out$NonW_Dir_con,
+                             "log(STcon) 1.2."=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
+                             "STcon 2.1"=Un_NonW_ST_out$Un_NonW_con,
+                             "log(STcon) 2.2"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
+                             "log(TotDur)"= log(Old_HOBOS_comb[,3]+1),
+                             "log(TotNum)"= log(Old_HOBOS_comb[,4]+1),
+                             "log(TotLeng)"= log(Old_HOBOS_comb[,5]+1)),
+                            rescale = "by_sd",corr_method = "spearman")
 dev.off()
 
+cor.test(NonW_ST_directed_out$NonW_Dir_con,
+         log(Old_HOBOS_comb[,3]+1),method="spearman", exact = FALSE)
+cor.test(NonW_ST_directed_out$NonW_Dir_con,
+         log(Old_HOBOS_comb[,4]+1),method="spearman", exact = FALSE)
 
-
-
-
+cor.test(Un_NonW_ST_out$Un_NonW_con,
+         log(Old_HOBOS_comb[,3]+1),method="spearman",exact = FALSE)
+cor.test(Un_NonW_ST_out$Un_NonW_con,
+         log(Old_HOBOS_comb[,4]+1),method="spearman",exact = FALSE)
+  
 
 
 

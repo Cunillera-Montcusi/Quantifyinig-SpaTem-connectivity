@@ -370,9 +370,12 @@ for (river in 1:length(HOBOS_dataset)) {
   ST_matrix_plots[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinates[[river]][,4:3]),
                                      aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(colour=Con_values, size=Con_values_SIZE), arrow=arrow(angle = 20), curvature = 0.15) +
-    geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
-    scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
-    scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
+    #geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
+    geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
+    scale_color_viridis(direction = -1)+
+    scale_fill_viridis(direction = -1)+
+    #scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
+    #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
     theme_classic()+
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
@@ -439,7 +442,8 @@ for (river in 1:length(HOBOS_dataset)) {
   ST_connectivity_plot[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinates[[river]][,4:3]),
                                           aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(color =edges_CC_values, size=edges_CC_values),arrow=arrow(angle = 20),curvature = 0.15) +
-    geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
+    #geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
+    geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
     scale_color_viridis(direction = -1)+
     scale_fill_viridis(direction = -1)+
     theme_classic()+
@@ -933,9 +937,12 @@ n %v% "Site_values" <- nod_fill_size
 ST_matrix_plots[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinates[[river]][,4:3]),
                                  aes(x = x, y = y, xend = xend, yend = yend))+
                             geom_edges(aes(colour=Con_values, size=Con_values_SIZE), arrow=arrow(angle = 20), curvature = 0.15) +
-                            geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
-                            scale_color_gradient2(low = "#FCCFEE",high = "#2B300D",midpoint = 0.5)+
-                            scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
+                            #geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
+                            geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+                          
+                            scale_color_viridis(direction = -1)+
+                            scale_fill_viridis(direction = -1)+
+                            #scale_color_gradient2(low = "#FCCFEE",high = "#2B300D",midpoint = 0.5)+
+                            #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
                             theme_classic()+
                             theme(axis.text = element_blank(),
                                   axis.ticks = element_blank(),
@@ -1001,7 +1008,8 @@ n<- network(Simple_river_network[[river]], directed=T, diag=T)
   ST_connectivity_plot[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinates[[river]][,4:3]),
                                           aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(color =edges_CC_values, size=edges_CC_values),arrow=arrow(angle = 20),curvature = 0.15) +
-    geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
+    #geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
+    geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
     scale_color_viridis(direction = -1)+
     scale_fill_viridis(direction = -1)+
     theme_classic()+
@@ -1491,8 +1499,10 @@ for (river in 1:length(HOBOS_dataset)) {
                                      aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(colour=Con_values, size=Con_values_SIZE), arrow=arrow(angle = 20, ends = "both"), curvature = 0.15) +
     geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
-    scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
-    scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
+    scale_color_viridis(direction = -1)+
+    scale_fill_viridis(direction = -1)+
+    #scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
+    #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
     theme_classic()+
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
@@ -1558,7 +1568,8 @@ for (river in 1:length(HOBOS_dataset)) {
   Un_ST_connectivity_plot[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinates[[river]][,4:3]),
                                           aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(color =edges_CC_values, size=edges_CC_values/2),arrow=arrow(angle = 20,ends = "both"),curvature = 0.15) +
-    geom_nodes(aes(fill =edges_CC_values, size=edges_CC_values), color="black" ,shape=21)+
+    geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
+    #geom_nodes(aes(fill =edges_CC_values, size=edges_CC_values), color="black" ,shape=21)+
     scale_color_viridis(direction = -1)+
     scale_fill_viridis(direction = -1)+
     theme_classic()+
@@ -2022,8 +2033,10 @@ for (river in 1:length(HOBOS_dataset)) {
                                         aes(x = x, y = y, xend = xend, yend = yend))+
     geom_edges(aes(colour=Con_values, size=Con_values_SIZE), arrow=arrow(angle = 20, ends = "both"), curvature = 0.15) +
     geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
-    scale_color_gradient2(low = "#FCCFEE",high = "#2B300D",midpoint = 0.5)+
-    scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
+    scale_color_viridis(direction = -1)+
+    scale_fill_viridis(direction = -1)+
+    #scale_color_gradient2(low = "#FCCFEE",high = "#2B300D",midpoint = 0.5)+
+    #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
     theme_classic()+
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),

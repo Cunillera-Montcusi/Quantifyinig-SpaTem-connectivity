@@ -32,6 +32,12 @@ library(multcompView)
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# _________________####
+# ACTIVE DISPERSERS_________________________________________________________________________ ####
+# _________________####
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 1. BIOLOGICAL Data uploading ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
@@ -78,6 +84,18 @@ BDD <- mutate(BDD,
                 str_detect(Code,"SC") ~ "SC",
                 str_detect(Code,"T") ~ "T",
                 TRUE ~ "ERROR" )) 
+Traits_val <- read.table("BiolData/traits2.txt",header = T)
+
+# Active dispersers
+# f4==3 and 2
+Trait_disp <- Traits_val%>%select(taxon,f4)%>%filter(f4==3)%>%
+              rows_insert(Traits_val%>%select(taxon,f4)%>%filter(f4==2))
+# Pasive dispersers
+# f1==3 and 2
+Trait_disp <- Traits_val%>%select(taxon,f1)%>%filter(f1==3)%>%
+  rows_insert(Traits_val%>%select(taxon,f1)%>%filter(f1==2))
+
+BDD <- BDD%>%select(Code, Date, Riera,matches(Trait_disp$taxon))
 
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -245,8 +263,8 @@ NonW_Dir <- list()
 WEIG_Dir<- list()
 Un_NonW<- list()
 Un_WEIG<- list()
-for (riera in 1:length(unique(HOB_BDD_match$ID))) {
-  names_riera <- unique(HOB_BDD_match$ID)
+for (riera in 1:length(unique(NonW_ST_matrix_out_out))) {
+  names_riera <- unique(Sites_list_comb$ID)
   
   values_places <- unlist(HOB_BDD_match%>%filter(ID==names_riera[riera])%>%select(DtoU))
   
@@ -274,58 +292,81 @@ HOB_BDD_match <- HOB_BDD_match%>%filter(Samp_ID !=c("R4","G1"))
 HOB_BDD_match
 HOB_BDD_match_matrix
 
+### *SMALL EDITIONS TO ELIMINATE Ocl/Acl/Bet ####
+HOB_BDD_match <- HOB_BDD_match%>%select(-c(NonW_Dir_Ocl,NonW_Dir_Acl,NonW_Dir_Bet,
+                                           WEIG_Dir_Ocl,WEIG_Dir_Acl,WEIG_Dir_Bet,
+                                           Un_NonW_Ocl,Un_NonW_Acl,Un_NonW_Bet,
+                                           Un_WEIG_Ocl,Un_WEIG_Acl,Un_WEIG_Bet))
+
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 5. Relationships with BIOL DATA ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
+names_scenarios <- c("Scenario A1",
+                     "Scenario A2",
+                     "Scenario B1",
+                     "Scenario B2", 
+                     "TotDur", "TotNum", "TotLeng")
+
+
 # 5.1. Richness ####
+plots_HOB_BDD_total <- list()
 plots_HOB_BDD <- list()
 for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
                                               -Samp_ID, -rich, -shan))){
   
-variable_x <- HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
-                                     -Latitud,-Longitud,
-                                     -ID, -DtoU,-ID_UpDo,
-                                     -Samp_ID, -rich, -shan)
-variable_x_name <- colnames(variable_x)[col_var]
-variable_x <- variable_x[,col_var]
-
-variable_y <- HOB_BDD_match%>%select(rich)
-
-factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
+  variable_x <- HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+                                       -Latitud,-Longitud,
+                                       -ID, -DtoU,-ID_UpDo,
+                                       -Samp_ID, -rich, -shan)
   
-dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=X_var, y=rich,fill=ID))+
-                            geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-                            geom_smooth(aes(colour=ID),method = "lm",alpha=0.1, se = F, linetype=2)+
-                            geom_smooth(method = "lm",alpha=0.1, se = T, fill="grey50", colour="black", size=2)+
-                            scale_fill_CUNILLERA(palette = "LGTBI")+
-                            scale_color_CUNILLERA(palette = "LGTBI")+
-                            xlab(variable_x_name)+
-                            labs(title=paste(variable_x_name,"vs","Richness"))+
-                            theme_classic()+
-                            theme(legend.position="none")
+  variable_x_name <- colnames(variable_x)[col_var]
+  variable_x <- variable_x[,col_var]
+  
+  variable_y <- HOB_BDD_match%>%select(rich)
+  variable_y_model <- unlist(variable_y)
+  
+  factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
+  Id_random <- unlist(factors$ID)
+  
+  model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
+  results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+  
+  dataset <- cbind(factors, "X_var"=variable_x, variable_y)
+  dataset$pred_values <- predict(model)
+  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=log(X_var+1), y=log(rich+1),fill=ID,colour=ID))+
+    geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
+    geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
+    geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+    scale_fill_CUNILLERA(palette = "LGTBI")+
+    scale_color_CUNILLERA(palette = "LGTBI")+
+    xlab(paste("log(STcon)"))+
+    ylab(paste("log(Richness)"))+
+    labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
+    labs(title=paste(names_scenarios[col_var],"vs","Richness"))+
+    theme_classic()+
+    theme(legend.position="none")
+    #facet_grid(.~ID)
 }
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=rich,fill=ID),shape=21, size=6)+
                             scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
-                            theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical"))
+                            theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 
 png(filename ="Figure/Biol_treat/Richness.png", 
-    width = 1000*4, height = 1000*4, 
+    width = 1250*2, height = 1000*2, 
     units = "px",res = 300) 
 grid.arrange(
-plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]], 
-plots_HOB_BDD[[5]],plots_HOB_BDD[[6]],plots_HOB_BDD[[7]],plots_HOB_BDD[[8]], 
-plots_HOB_BDD[[9]],plots_HOB_BDD[[10]],plots_HOB_BDD[[11]],plots_HOB_BDD[[12]], 
-plots_HOB_BDD[[13]],plots_HOB_BDD[[14]],plots_HOB_BDD[[15]],plots_HOB_BDD[[16]], 
-plots_HOB_BDD[[17]],plots_HOB_BDD[[18]],plots_HOB_BDD[[19]], legend_plots,
-nrow=5,ncol=4)
+  plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],
+  legend_plots,
+  plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
+  nrow=2,ncol=3)
 dev.off()
+plots_HOB_BDD_total[[1]] <- plots_HOB_BDD
 
 # 5.2. Shannon ####
 plots_HOB_BDD <- list()
@@ -338,22 +379,30 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                        -Latitud,-Longitud,
                                        -ID, -DtoU,-ID_UpDo,
                                        -Samp_ID, -rich, -shan)
-  variable_x_name <- colnames(variable_x)[col_var]
+  
   variable_x <- variable_x[,col_var]
   
   variable_y <- HOB_BDD_match%>%select(shan)
-  
   factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
   
+  variable_y_model <- unlist(variable_y)
+  Id_random <- unlist(factors$ID)
+  
+  model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
+  results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+  
   dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=X_var, y=shan,fill=ID))+
+  dataset$pred_values <- predict(model)
+  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=log(X_var+1), y=log(shan+1),fill=ID,colour=ID))+
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_smooth(aes(colour=ID),method = "lm",alpha=0.1, se = F, linetype=2)+
-    geom_smooth(method = "lm",alpha=0.1, se = T, fill="grey50", colour="black", size=2)+
+    geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
+    geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_CUNILLERA(palette = "LGTBI")+
     scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab(variable_x_name)+
-    labs(title=paste(variable_x_name,"vs","Shannon"))+
+    xlab(paste("log(STcon)"))+
+    ylab(paste("log(Shannon)"))+
+    labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
+    labs(title=paste(names_scenarios[col_var],"vs","Shannon"))+
     theme_classic()+
     theme(legend.position="none")
 }
@@ -361,20 +410,19 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=shan,fill=ID),shape=21, size=6)+
                             scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
-                            theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical"))
+                            theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 
 png(filename ="Figure/Biol_treat/Shannon.png", 
-    width = 1000*4, height = 1000*4, 
+    width = 1250*2, height = 1000*2, 
     units = "px",res = 300) 
 grid.arrange(
-  plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]], 
-  plots_HOB_BDD[[5]],plots_HOB_BDD[[6]],plots_HOB_BDD[[7]],plots_HOB_BDD[[8]], 
-  plots_HOB_BDD[[9]],plots_HOB_BDD[[10]],plots_HOB_BDD[[11]],plots_HOB_BDD[[12]], 
-  plots_HOB_BDD[[13]],plots_HOB_BDD[[14]],plots_HOB_BDD[[15]],plots_HOB_BDD[[16]], 
-  plots_HOB_BDD[[17]],plots_HOB_BDD[[18]],plots_HOB_BDD[[19]], legend_plots,
-  nrow=5,ncol=4)
+  plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],
+  legend_plots,
+  plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
+  nrow=2,ncol=3)
 dev.off()
+plots_HOB_BDD_total[[2]] <- plots_HOB_BDD
 
 # 5.3. Matching with Bray & Jaccard ####
 output <- matrix(nrow=length(unlist(HOB_BDD_match_matrix$BrayCurtis)))
@@ -398,28 +446,41 @@ for (lis_elem in 1:length(HOB_BDD_match_matrix)) {
 colnames(output)[1] <- "ID"
 
 STmatrix_BiolDissim <- output
+if (length(which(is.na(STmatrix_BiolDissim$BrayCurtis)==T))>0) {
+  STmatrix_BiolDissim <- STmatrix_BiolDissim[-which(is.na(STmatrix_BiolDissim$BrayCurtis)==T),]
+}
+
 
 # 5.3.1. Plot Bray ####
 plots_HOB_BDD <- list()
-for (col_var in 1:ncol(output%>%select(-ID, -BrayCurtis, -Jaccard))){
+for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID, -BrayCurtis, -Jaccard))){
   
-  variable_x <- output%>%select(-ID, -BrayCurtis, -Jaccard)
+  
+  variable_x <- STmatrix_BiolDissim%>%select(-ID, -BrayCurtis, -Jaccard)
   variable_x_name <- colnames(variable_x)[col_var]
   variable_x <- variable_x[,col_var]
   
-  variable_y <- output%>%select(BrayCurtis)
+  variable_y <- STmatrix_BiolDissim%>%select(BrayCurtis)
+  factors <- STmatrix_BiolDissim%>%select(ID)
   
-  factors <- output%>%select(ID)
+  variable_y_model <- unlist(variable_y)
+  Id_random <- unlist(factors$ID)
   
+  model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
+  results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+
   dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=X_var, y=BrayCurtis,fill=ID))+
+  dataset$pred_values <- predict(model)
+  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=log(X_var+1), y=BrayCurtis,fill=ID,colour=ID))+
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_smooth(aes(colour=ID),method = "lm",alpha=0.1, se = F, linetype=2)+
-    geom_smooth(method = "lm",alpha=0.1, se = T, fill="grey50", colour="black", size=2)+
+    geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = T, linetype=2)+
+    geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_CUNILLERA(palette = "LGTBI")+
     scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab(variable_x_name)+
-    labs(title=paste(variable_x_name,"vs","Richness"))+
+    xlab(paste("STconmat"))+
+    ylab(paste("Bray Curtis"))+
+    labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
+    labs(title=paste(names_scenarios[col_var],"vs","Bray Curtis"))+
     theme_classic()+
     theme(legend.position="none")
 }
@@ -432,31 +493,42 @@ legend_plots<- get_legend(ggplot(dataset)+
 png(filename ="Figure/Biol_treat/Bray.png", 
     width = 1250*2, height = 1000*2, 
     units = "px",res = 300) 
-grid.arrange(plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],legend_plots,plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
+grid.arrange(plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],
+             legend_plots,
+             plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   nrow=2,ncol=3)
 dev.off()
+plots_HOB_BDD_total[[3]] <- plots_HOB_BDD
 
 # 5.3.2. Plot Jaccard ####
 plots_HOB_BDD <- list()
-for (col_var in 1:ncol(output%>%select(-ID, -BrayCurtis, -Jaccard))){
+for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID, -BrayCurtis, -Jaccard))){
   
-  variable_x <- output%>%select(-ID, -BrayCurtis, -Jaccard)
+  variable_x <- STmatrix_BiolDissim%>%select(-ID, -BrayCurtis, -Jaccard)
   variable_x_name <- colnames(variable_x)[col_var]
   variable_x <- variable_x[,col_var]
   
-  variable_y <- output%>%select(Jaccard)
+  variable_y <- STmatrix_BiolDissim%>%select(Jaccard)
+  factors <- STmatrix_BiolDissim%>%select(ID)
   
-  factors <- output%>%select(ID)
+  variable_y_model <- unlist(variable_y)
+  Id_random <- unlist(factors$ID)
+  
+  model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
+  results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
   
   dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=X_var, y=Jaccard,fill=ID))+
+  dataset$pred_values <- predict(model)
+  plots_HOB_BDD[[col_var]] <- ggplot(dataset,aes(x=log(X_var+1), y=Jaccard,fill=ID,colour=ID))+
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_smooth(aes(colour=ID),method = "lm",alpha=0.1, se = F, linetype=2)+
-    geom_smooth(method = "lm",alpha=0.1, se = T, fill="grey50", colour="black", size=2)+
+    geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = T, linetype=2)+
+    geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_CUNILLERA(palette = "LGTBI")+
     scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab(variable_x_name)+
-    labs(title=paste(variable_x_name,"vs","Richness"))+
+    xlab(paste("STconmat"))+
+    ylab(paste("Jaccard"))+
+    labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
+    labs(title=paste(names_scenarios[col_var],"vs","Jaccard"))+
     theme_classic()+
     theme(legend.position="none")
 }
@@ -469,18 +541,95 @@ legend_plots<- get_legend(ggplot(dataset)+
 png(filename ="Figure/Biol_treat/Jaccard.png", 
     width = 1250*2, height = 1000*2, 
     units = "px",res = 300) 
-grid.arrange(plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],legend_plots,plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
+grid.arrange(plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],
+             legend_plots,
+             plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
              nrow=2,ncol=3)
 dev.off()
-
+plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 6. FINAL RESULTS TABLES ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-#Matrices in list format and in datasframe 
-HOB_BDD_match_matrix
-STmatrix_BiolDissim
-#Individual values altogether 
-HOB_BDD_match
+#### test chunk ####
 
+plots_HOB_BDD <- list()
+plots_HOB_BDD_ID_plot <- list()
+for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+                                              -Latitud,-Longitud,
+                                              -ID, -DtoU,-ID_UpDo,-TotDur,-TotNum,-TotLeng,
+                                              -Samp_ID, -rich, -shan))){
+  ID_names <- unique(HOB_BDD_match$ID)
+  for (name_ID in 1:length(ID_names)) {
+    variable_x <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(-Riera, -Codi_HOBO,
+                                                                         -Latitud,-Longitud,
+                                                                         -ID, -DtoU,-ID_UpDo,-TotDur,-TotNum,-TotLeng,
+                                                                         -Samp_ID, -rich, -shan)
+    variable_x_name <- colnames(variable_x)[col_var]
+    variable_x <- variable_x[,col_var]
+    
+    variable_y <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(rich)
+    variable_y_model <- unlist(variable_y)
+    
+    factors <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(ID, DtoU,ID_UpDo)
+    Id_random <- unlist(factors$ID)
+    
+    model <- lm(log(variable_y_model+1)~log(variable_x+1))
+    if(is.na(model$coefficients[2])==TRUE){
+      results <- paste("-","-","-")
+    }else{
+      results <- round(as.numeric(c(summary(model)[[4]][,1], summary(model)[[4]][2,4])),2)
+    }
+    
+    col_fill <- CUNILLERA_pal("LGTBI")(length(ID_names))
+    
+    dataset <- cbind(factors, "X_var"=variable_x, variable_y)
+    #dataset$pred_values <- predict(model)
+    plots_HOB_BDD_ID_plot[[name_ID]]<- ggplot(dataset,aes(x=log(X_var+1), y=log(rich+1)))+
+      geom_point(color="grey30", alpha=0.5, shape=21, size=2,fill=col_fill[name_ID])+
+      geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, 
+                  linetype=2, fill=col_fill[name_ID])+
+      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+      xlab(paste("log(STcon)"))+
+      ylab(paste("log(richness)"))+
+      labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
+      labs(title=paste(names_scenarios[col_var],"vs","richness"))+
+      theme_classic()+
+      theme(legend.position="none")
+  }
+  plots_HOB_BDD[[col_var]] <- plots_HOB_BDD_ID_plot
+}
+
+legend_plots<- get_legend(ggplot(dataset)+
+                            geom_point(aes(x=X_var,y=rich,fill=ID),shape=21, size=6)+
+                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical"))
+
+
+png(filename ="Figure/Biol_treat/Richness.png", 
+    width = 1000*4, height = 1000*4, 
+    units = "px",res = 300) 
+grid.arrange(
+  arrangeGrob(
+    plots_HOB_BDD[[1]][[1]],plots_HOB_BDD[[1]][[2]],plots_HOB_BDD[[1]][[3]],
+    plots_HOB_BDD[[1]][[4]],plots_HOB_BDD[[1]][[5]],plots_HOB_BDD[[1]][[6]], 
+    nrow=1,ncol=6),
+  
+  arrangeGrob(
+    plots_HOB_BDD[[2]][[1]],plots_HOB_BDD[[2]][[2]],plots_HOB_BDD[[2]][[3]],
+    plots_HOB_BDD[[2]][[4]],plots_HOB_BDD[[2]][[5]],plots_HOB_BDD[[2]][[6]],
+    nrow=1,ncol=6),
+  
+  arrangeGrob(
+    plots_HOB_BDD[[3]][[1]],plots_HOB_BDD[[3]][[2]],plots_HOB_BDD[[3]][[3]],
+    plots_HOB_BDD[[3]][[4]],plots_HOB_BDD[[3]][[5]],plots_HOB_BDD[[3]][[6]],
+    nrow=1,ncol=6),
+  
+  arrangeGrob(
+    plots_HOB_BDD[[4]][[1]],plots_HOB_BDD[[4]][[2]],plots_HOB_BDD[[4]][[3]],
+    plots_HOB_BDD[[4]][[4]],plots_HOB_BDD[[4]][[5]],plots_HOB_BDD[[4]][[6]],    
+    nrow=1,ncol=6),
+  arrangeGrob(legend_plots),
+  nrow=5,ncol=1)
+dev.off()

@@ -42,7 +42,9 @@ for (river in 1:length(HOBOS_sites)) {
     if(length(which(out_sum==1))-length(which(out_sum==-1))>0){
       out_TotNum_rew[colu] <- mean(which(c(out_sum,-1)==1)-which(c(out_sum,-1)==-1))}
     if(length(which(out_sum==1))-length(which(out_sum==-1))==0){
-      if(out_sum[1]==-1){
+    test_isNA <- out_sum[which(out_sum!=0)[1]]==-1
+    test_isNA <- ifelse(is.na(test_isNA)==TRUE,FALSE,test_isNA)
+    if(test_isNA==TRUE){
         if(length(which(c(1,out_sum)==1))-length(which(c(1,out_sum)==-1))>0){
           out_TotNum_rew[colu] <- mean(which(c(1,out_sum,-1)==1)-which(c(1,out_sum,-1)==-1))
         }}else{
@@ -67,3 +69,17 @@ Old_HOBOS_comb <- data.frame("ID"=HOB_riv_ID,"DtoU"=ups_dos,
                                    Old_HOBOS[[5]],Old_HOBOS[[6]],
                                    Old_HOBOS[[7]]))%>%
                              mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
+
+Old_HOBOS_comb
+
+
+# We upload the used dataset (original Fric, Fdis and FR)
+data <- read.csv("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/1. David Pineda HYDR/Models NULS/VARIABLES.csv", sep=";")
+x_data <- data
+
+x_data <- select(x_data, c(Site,MeanDur,TotNum))%>%arrange(Site)
+
+
+
+
+
