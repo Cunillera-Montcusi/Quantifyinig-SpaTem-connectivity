@@ -1,6 +1,6 @@
 
-
-png(filename =paste("Figure/Data_treat/","Fig2",".png"), 
+# Figure 2
+png(filename =paste("Figure/Data_treat/","Figure2",".png"), 
     width = 530*5, height = 670*5, 
     units = "px",res = 300)
 grid.arrange(
@@ -19,8 +19,9 @@ arrangeGrob(
   top="B) STconmat"
 ))
 dev.off()
+#
 
-
+# Figure 3
 data_PCA <- data.frame(data.frame("STcon A1."=NonW_ST_directed_out$NonW_Dir_con,
                                   "STcon A2."=WEIG_ST_directed_out$WEIG_Dir_con,
                                   "STcon B1."=Un_NonW_ST_out$Un_NonW_con, 
@@ -28,7 +29,7 @@ data_PCA <- data.frame(data.frame("STcon A1."=NonW_ST_directed_out$NonW_Dir_con,
             Old_HOBOS_comb[,3:5])
 
 
-png(filename =paste("Figure/Data_treat/","PCAs_Fig3",".png"), 
+png(filename =paste("Figure/Data_treat/","Figure3",".png"), 
     width = 700*2.5, height = 550*2.5, 
     units = "px",res = 300)
 
@@ -57,10 +58,10 @@ autoplot(prcomp(data_PCA,
   labs(caption = caption_text)+
   theme_bw()
 dev.off()
+#
 
-
-
-png(filename =paste("Figure/Data_treat/Figure4.png"), 
+# Figure 4a
+png(filename =paste("Figure/Data_treat/Figure4a.png"), 
       width = 700*4, height = 600*4, 
       units = "px",res = 300)
   rows_filter <- unlist(c(four_approxim[[1]]%>%
@@ -140,8 +141,9 @@ png(filename =paste("Figure/Data_treat/Figure4.png"),
                               scale_size(name="Upstream downstream position")+
                               theme_classic()+theme(legend.direction = "horizontal",
                                                     legend.box="vertical"))
-  
-  png(filename =paste("Figure/Data_treat/Figure4.png"), 
+
+# Figure 4a
+  png(filename =paste("Figure/Data_treat/Figure4b.png"), 
       width = 650*6, height = 505*6, 
       units = "px",res = 300) 
   grid.arrange(
@@ -184,15 +186,52 @@ png(filename =paste("Figure/Data_treat/Figure4.png"),
     legend_plots, nrow=3,ncol=2)
   dev.off()
 
-# ACTIVE DISPERSERS
-# Run SpaTemp_BiolComparison.R with the filter for active dispersers
-plots_active <- list(plots_HOB_BDD_total[[1]][[3]],
-                     plots_HOB_BDD_total[[2]][[3]])
+#Figure 5  
 
-# PASSIVE DISPERSERS
-# Run SpaTemp_BiolComparison.R with the filter for passive dispersers
-plots_passive <- list(plots_HOB_BDD_total[[1]][[3]],
-                      plots_HOB_BDD_total[[4]][[1]],
-                      plots_HOB_BDD_total[[4]][[3]])
+# Select each significant plot.   
+
   
+plots_BID_sign <- list(plots_HOB_BDD_total[[1]][[3]],
+                       plots_HOB_BDD_total[[1]][[5]],
+                       plots_HOB_BDD_total[[2]][[3]],
+                       plots_HOB_BDD_total[[2]][[5]],
+                       plots_HOB_BDD_total[[3]][[7]],
+                       plots_HOB_BDD_total[[4]][[4]],
+                       plots_HOB_BDD_total[[5]][[2]])
+                      
+legend_plots<- get_legend(ggplot(dataset)+
+                            geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
+                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            theme_classic()+theme(legend.direction = "horizontal",
+                                                  legend.box="horizontal"))
+
+
+png(filename =paste("Figure/Data_treat/Figure5.png"), 
+    width = 450*4, height = 1100*4, 
+    units = "px",res = 300)
+grid.arrange(
+  arrangeGrob( 
+    plots_BID_sign[[2]], 
+    plots_BID_sign[[1]],
+    ncol=2, top="Richness"), 
   
+  arrangeGrob( 
+    plots_BID_sign[[4]],
+    plots_BID_sign[[3]],
+    ncol=2, top="Shannon"),
+  
+  arrangeGrob( 
+    plots_BID_sign[[5]],
+    ncol=2, top="Trait abundance"),
+
+  arrangeGrob( 
+    plots_BID_sign[[6]],
+    plots_BID_sign[[7]],
+    ncol=2, top="Similarity index"),
+  
+  legend_plots,
+  nrow=5)
+dev.off()
+  
+
+
