@@ -29,7 +29,7 @@ library(vegan)
 ### 1 SpaTemp_HOBOS_treatment.R
 ### 2 Old_HOBOS_calculation.R
 ### 3 SpaTemp_comparison.R
-### 4 SpaTemp_comparison.R
+### 4 SpaTemp_Biolcomparison.R
 
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
 
@@ -400,6 +400,8 @@ HOB_BDD_match <- HOB_BDD_match%>%select(-c(NonW_Dir_Ocl,NonW_Dir_Acl,NonW_Dir_Be
 # 5. Relationships with BIOL DATA ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
+CunilleraPAL_corrected <- CUNILLERA_pal("LGTBI")(7)[-3]
+
 names_scenarios <- c("Scenario A1",
                      "Scenario A2",
                      "Scenario B1",
@@ -450,12 +452,12 @@ plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
     geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
     geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+
-    scale_color_CUNILLERA(palette = "LGTBI")+
+    scale_fill_manual(values =  CunilleraPAL_corrected)+
+    scale_color_manual(values =  CunilleraPAL_corrected)+
     xlab(paste("log(STcon)"))+
     ylab(paste("log(Richness)"))+
     labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-    labs(title=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
+    labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
     theme_classic()+
     theme(legend.position="none")
     #facet_grid(.~ID)  
@@ -464,7 +466,7 @@ plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
-                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 
@@ -522,12 +524,12 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_CUNILLERA(palette = "LGTBI")+
-      scale_color_CUNILLERA(palette = "LGTBI")+
+      scale_fill_manual(values =  CunilleraPAL_corrected)+
+      scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STcon)"))+
       ylab(paste("log(Shannon)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(title=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
+      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
       theme(legend.position="none")
     #facet_grid(.~ID)  
@@ -536,7 +538,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
-                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 
@@ -595,12 +597,12 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_CUNILLERA(palette = "LGTBI")+
-      scale_color_CUNILLERA(palette = "LGTBI")+
+      scale_fill_manual(values =  CunilleraPAL_corrected)+
+      scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STcon)"))+
       ylab(paste("log(Trait abundance)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(title=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
+      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
       theme(legend.position="none")
     #facet_grid(.~ID)  
@@ -609,7 +611,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
-                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 
@@ -685,12 +687,12 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_CUNILLERA(palette = "LGTBI")+
-      scale_color_CUNILLERA(palette = "LGTBI")+
+      scale_fill_manual(values =  CunilleraPAL_corrected)+
+      scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STconmat)"))+
       ylab(paste("Bray curtis"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(title=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
+      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
       theme(legend.position="none")
     #facet_grid(.~ID)  
@@ -699,7 +701,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
-                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 png(filename ="Figure/Biol_treat/BrayCurtis.png", 
@@ -750,12 +752,12 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_CUNILLERA(palette = "LGTBI")+
-      scale_color_CUNILLERA(palette = "LGTBI")+
+      scale_fill_manual(values =  CunilleraPAL_corrected)+
+      scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STconmat)"))+
       ylab(paste("Jaccard"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(title=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
+      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
       theme(legend.position="none")
     #facet_grid(.~ID)  
@@ -764,7 +766,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
-                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 png(filename ="Figure/Biol_treat/Jaccard.png", 
