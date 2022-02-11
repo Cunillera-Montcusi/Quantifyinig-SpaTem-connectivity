@@ -31,6 +31,10 @@ library(vegan)
 ### 3 SpaTemp_comparison.R
 ### 4 SpaTemp_Biolcomparison.R
 
+
+# Nice colors? CUNILLERA_palette is what you need
+source("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/CUNILLERA_palette.R")
+
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
 
 

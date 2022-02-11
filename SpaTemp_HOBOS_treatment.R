@@ -96,7 +96,7 @@ date_HOBOS_end <- "2019-12-20"
 #Beginning
 bd <- as.Date(date_HOBOS)
 #End
-ed <- as.Date(date_correct_Autumn)
+ed <- as.Date(date_HOBOS_end)
 
 # Difference in number of days will correspond to the number of rows to be selected. 
 time_window_beg <- as.numeric(difftime(bd+1, date_HOBOS, units = "days")) 

@@ -16,39 +16,22 @@ Ste_cha <- theme(axis.text = element_blank(),
 
 grid.arrange(
 arrangeGrob(
-  arrangeGrob(Dir_NonW_Net$Dir_NonW_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="A) STcon",subtitle="A1) Directed Binary")),
-  arrangeGrob(Dir_WEIG_Net$Dir_WEIG_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="A2) Directed Weighted")),
-  arrangeGrob(UnD_NonW_Net$UnD_NonW_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B1) Undirected Binary")),
-  arrangeGrob(UnD_WEIG_Net$UnD_WEIG_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B2) Undirected Weighted")),
+  arrangeGrob(Dir_NonW_Net$Dir_NonW_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="A) STcon",subtitle="A1: Directed Binary")),
+  arrangeGrob(Dir_WEIG_Net$Dir_WEIG_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="A2: Directed Weighted")),
+  arrangeGrob(UnD_NonW_Net$UnD_NonW_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B1: Undirected Binary")),
+  arrangeGrob(UnD_WEIG_Net$UnD_WEIG_ST_con_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B2: Undirected Weighted")),
   top=""
 ),
 arrangeGrob(
-  arrangeGrob(Dir_NonW_Net$Dir_NonW_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="A) STcon",
-                                                                                     subtitle="A1) Directed Binary")),
-  arrangeGrob(Dir_WEIG_Net$Dir_WEIG_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="A2) Directed Weighted")),
-  arrangeGrob(UnD_NonW_Net$UnD_NonW_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B1) Undirected Binary")),
-  arrangeGrob(UnD_WEIG_Net$UnD_WEIG_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B2) Undirected Weighted")),
+  arrangeGrob(Dir_NonW_Net$Dir_NonW_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="B) STconmat",
+                                                                                     subtitle="A1: Directed Binary")),
+  arrangeGrob(Dir_WEIG_Net$Dir_WEIG_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="A2: Directed Weighted")),
+  arrangeGrob(UnD_NonW_Net$UnD_NonW_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B1: Undirected Binary")),
+  arrangeGrob(UnD_WEIG_Net$UnD_WEIG_ST_matrix_plo[[7]]+HOBO3_highlight+Ste_cha+ labs(title="",subtitle="B2: Undirected Weighted")),
   top=""
 ))
 dev.off()
 #
-
-
-ggplot(n, )+
-  geom_edges(aes(colour=Con_values, size=Con_values_SIZE), arrow=arrow(angle = 20), curvature = 0.15) +
-  #geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
-  geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
-  scale_color_viridis(direction = -1)+
-  scale_fill_viridis(direction = -1)+
-  #scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
-  #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
-  theme_classic()+
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        axis.line = element_blank(),
-        panel.border = element_rect(size=2)
-        legend.position = "none",
-        panel.background=element_blank())
 
 
 
