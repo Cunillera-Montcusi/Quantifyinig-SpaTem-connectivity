@@ -109,7 +109,19 @@ for (site in 1:length(HOBOS_sites)) {
 }
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 3. Calculation of ST indices ####
+# 3. Distance matric creation ####
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
+# Must be a list of distances matrix for each river. 
+# Must be a symmetric matrix (upper and lower triangles must be equal). The function already selects which distances 
+#are selected in each case.  
+eucl_dist_matrices <- list()
+for (river in 1:length(Sites_list)) {
+  eucl_dist_matrices[[river]] <-as.matrix(dist(Sites_list[[river]][,4:3],diag = T,upper = T)) 
+}
+
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# 4. Calculation of ST indices ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # Building a directed non weighted network
@@ -136,6 +148,7 @@ Dir_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
                                 Sites_coordinates=Sites_list,
                                 direction="directed", 
                                 weighting=TRUE,
+                                dist_matrices = eucl_dist_matrices,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
@@ -168,6 +181,7 @@ UnD_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
                                 Sites_coordinates=Sites_list,
                                 direction="undirected", 
                                 weighting=TRUE,
+                                dist_matrices = eucl_dist_matrices,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
@@ -177,10 +191,10 @@ UnD_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
                                 print.directory="Figure/")
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 4. Data extraction and indices treatment ####
+# 5. Data extraction and indices treatment ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-# 4.1. Directed NONWEIGHTED river network OUTPUTS ####
+# 5.1. Directed NONWEIGHTED river network OUTPUTS ####
 # Spatiotemporal matrix 
 NonW_ST_matrix_out_out <- Dir_NonW_Net$Dir_NonW_ST_matrix
 
@@ -223,7 +237,7 @@ NonW_ST_directed_output <- data.frame(NonW_Dir_con=unlist(NonW_ST_connectivity_v
                                       NonW_Dir_Bet=unlist(NonW_ST_directed_betw_mean))
 
 
-# 4.2. Directed WEIGHTED river network OUTPUTS ####
+# 5.2. Directed WEIGHTED river network OUTPUTS ####
 # Spatiotemporal matrix 
 WEIG_ST_matrix_out_out <- Dir_WEIG_Net$Dir_WEIG_ST_matrix
 
@@ -262,7 +276,7 @@ WEIG_ST_directed_output <- data.frame(WEIG_Dir_con=unlist(WEIG_ST_connectivity_v
                                       WEIG_Dir_Acl=unlist(WEIG_ST_Allclo_mean),
                                       WEIG_Dir_Bet=unlist(WEIG_ST_betw_mean))
 
-# 4.3. Undirected river network OUTPUTS ####
+# 5.3. Undirected river network OUTPUTS ####
 # Spatiotemporal matrix 
 Un_NonW_ST_matrix_out_out <- UnD_NonW_Net$UnD_NonW_ST_matrix
 
@@ -301,7 +315,7 @@ Un_NonW_ST_output <- data.frame(Un_NonW_con=unlist(Un_NonW_ST_connectivity_value
                                 Un_NonW_Acl=unlist(Un_NonW_ST_Allclo_mean),
                                 Un_NonW_Bet=unlist(Un_NonW_ST_betw_mean))
 
-# 4.4 Undirected WEIGHTED river network OUTPUTS ####
+# 5.4 Undirected WEIGHTED river network OUTPUTS ####
 # Spatiotemporal matrix 
 Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$UnD_WEIG_ST_matrix
 
@@ -369,7 +383,7 @@ Un_WEIG_ST_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,Un_WEIG_ST_output)%>%
 
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 5. Final values__________________________________________________________________ ####
+# 6. Final values__________________________________________________________________ ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 NonW_ST_matrix_out_out
 WEIG_ST_matrix_out_out

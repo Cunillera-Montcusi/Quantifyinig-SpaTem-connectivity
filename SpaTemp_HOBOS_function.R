@@ -11,6 +11,7 @@ spat_temp_index <- function(HOBOS_dataset,
                             Sites_coordinates,
                             direction, 
                             weighting=FALSE,
+                            dist_matrices,
                             value_S_LINK=1,
                             value_T_LINK=1,
                             value_NO_S_link=0,
@@ -56,6 +57,7 @@ ifelse(is.character(print.directory)==T,
 }else{
 c("Plots will not be printed in a folder but created together with the outputs")
 }
+
 
 if(direction=="directed"){
 # Simple river network________________####
@@ -661,6 +663,7 @@ ST_directed_Ocloseness_rivers <- list()
 ST_directed_Allcloseness_rivers <- list()
 ST_directed_betweennes_rivers <- list()
 
+
 #Parallelization parameters 
 require(doParallel)
 registerDoParallel(cores = detectCores()-1)
@@ -673,6 +676,10 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
 #for (river in 1:length(HOBOS_dataset)) {
 # We calculate the number of nodes of our network (used along the function)  
 numn_nodes <- ncol(HOBOS_dataset[[river]])-1
+
+# We select the corresponding distance matrix
+dist_matr <- dist_matrices[[river]]
+
 # We built the matrix corresponding to the num. of nodes multiplied by the DAYS of HOBOS that we have
 ### This matrix is the "giant" themplate where we will put all the values.
 ST_matrix <- matrix(nrow = numn_nodes*length(HOBOS_dataset[[river]]$Day)+numn_nodes,
@@ -706,10 +713,10 @@ if (weighting==T) {
 for (site_step in 1:c(length(time_step_1)-1)) {
       if(time_step_1[site_step]==1){
         ST_matrix[spa_connections[site_step],
-                  spa_connections[site_step]+1] <- 1*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,site_step+1]
+                  spa_connections[site_step]+1] <- 1*dist_matr[site_step,site_step+1]
       }else{
         ST_matrix[spa_connections[site_step],
-                  spa_connections[site_step]+1] <- 0*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,site_step+1]
+                  spa_connections[site_step]+1] <- 0*dist_matr[site_step,site_step+1]
       }}  
 }else{
   for (site_step in 1:c(length(time_step_1)-1)) {
@@ -761,7 +768,7 @@ for (every_path in 1:c(length(time_step_1)-1)){
 All_river_paths[every_path,site] <- value_S_LINK
 }
 if (weighting==T) {
-All_river_paths <- All_river_paths*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+All_river_paths <- All_river_paths*dist_matr
 }
 # We add the "All_river_paths" filled for each node in the "big" matrix specific sites
 ST_matrix[spa_connections[1]:spa_connections[numn_nodes],
@@ -787,8 +794,9 @@ if(temp_change==0){# Temporal change is constant
     # We created "All_river_paths"
     All_river_paths <- matrix(nrow =length(time_step_1),ncol = length(time_step_1),data = 0)
     All_river_paths[upper.tri(All_river_paths)] <- value_NO_T_link
+    
     # We then do the same as before, check, substitute and add "1" or 0 depending if the connection 
-    # following the river is flow.
+    # follows the river flow.
     for (every_path in site_step:c(length(time_step_1)-1)){
       check <- length(all_shortest_paths(a, every_path, c(every_path+1):numn_nodes, mode = "out")$res)
       if (check==0) {
@@ -799,7 +807,7 @@ if(temp_change==0){# Temporal change is constant
   All_river_paths[every_path,site] <- value_T_LINK
 }
 if (weighting==T) {
-All_river_paths <- All_river_paths*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+All_river_paths <- All_river_paths*dist_matr
 }
 
 # TEMPORAL LINKS are filled in the "future" of our current matrix. This means that we are filling the matrix in 
@@ -807,15 +815,16 @@ All_river_paths <- All_river_paths*as.matrix(dist(Sites_coordinates[[river]][,4:
 # so, we evaluate here the present (time step 1) and the future (time step 2) but register as the past (at time step 2)
 ST_matrix[temp_connections[site_step],
           c(temp_connections[1]+numn_nodes):c(temp_connections[numn_nodes]+numn_nodes)] <- All_river_paths[site_step,]
+
 # Here we add the temporal "link" between "himself". If the link is stable and connected (from 1 to 1), we fill the 
 # diagonal value accordingly. Therefore, we will be able to evaluate the relationship between "himself". Kind of 
 # Tot_Num indicator.  
 ST_matrix[temp_connections[site_step],
-          temp_connections[site_step]+numn_nodes] <- value_T_LINK
+          temp_connections[site_step]+numn_nodes] <- 0
 
 }else{# Here we check if the temporal change implies going from 0 to 0 (so a stable disconnected link). Then we put 0
   ST_matrix[temp_connections[site_step],
-              temp_connections[site_step]+numn_nodes] <- value_NO_T_link
+              temp_connections[site_step]+numn_nodes] <- value_NO_T_link*dist_matr[site_step,site_step+1]
   }
 }
 
@@ -823,13 +832,13 @@ ST_matrix[temp_connections[site_step],
 ## This just needs to be filled with zeros... so no need to use "All_river_paths"
 if(temp_change==1){
   ST_matrix[temp_connections[site_step],
-            temp_connections[site_step]+numn_nodes] <- value_NO_T_link
+            temp_connections[site_step]+numn_nodes] <- value_NO_T_link*dist_matr[site_step,site_step+1]
 }
 #Gained links (when temp_change=-1)
 ## It is a "gain" but it means that "in the present" (time step 1), the node is still disconnected. So it =0
 if(temp_change==-1){
   ST_matrix[temp_connections[site_step],
-            temp_connections[site_step]+numn_nodes]  <- value_NO_T_link
+            temp_connections[site_step]+numn_nodes]  <- value_NO_T_link*dist_matr[site_step,site_step+1]
 }
 
 #Temporal indirect links _______________________
@@ -851,7 +860,7 @@ if(temp_change==1){
   }
   
 if (weighting==T) {
-    All_river_paths <- All_river_paths*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+    All_river_paths <- All_river_paths*dist_matr
 }
   
 ST_matrix[temp_connections[site_step],
@@ -912,7 +921,7 @@ out_out <- out_out+out
 }
 
 # We save the collapsed matrix
-#out_out<- out_out/as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T)) # This two lines can be used if we want to homogenize the values of distance
+#out_out<- out_out/dist_matr # This two lines can be used if we want to homogenize the values of distance
 #diag(out_out) <- 0 # But we must bear in mind that this will mean that the different distances are then "not well considered" as we are dividing each 
                     # cell for its distance between two parts - We are "suppressing the weighting". So doing the same as in a Non-Weigted 
 ST_matrix_out_out[[river]] <- out_out/c(length(HOBOS_dataset[[river]]$Day))
@@ -1794,13 +1803,16 @@ pack_check <- search()
 pack_check_val <- length(which(pack_check=="package:sna"))
 if(pack_check_val>0){detach("package:sna", unload = TRUE)}
 out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
-#for (river in i:length(HOBOS_dataset)) {
-    # We calculate the number of nodes of the network   
-    numn_nodes <- ncol(HOBOS_dataset[[river]])-1
+
+# We calculate the number of nodes of the network   
+numn_nodes <- ncol(HOBOS_dataset[[river]])-1
     
-    # We create the big matrix as before  
-    Un_ST_matrix <- matrix(nrow = numn_nodes*length(HOBOS_dataset[[river]]$Day)+numn_nodes,
-                           ncol = numn_nodes*length(HOBOS_dataset[[river]]$Day)+numn_nodes, data=0)
+# We select the corresponding distance matrix
+dist_matr <- dist_matrices[[river]]
+    
+# We create the big matrix as before  
+Un_ST_matrix <- matrix(nrow = numn_nodes*length(HOBOS_dataset[[river]]$Day)+numn_nodes,
+                       ncol = numn_nodes*length(HOBOS_dataset[[river]]$Day)+numn_nodes, data=0)
     
     
     Un_ST_Oclosenness_matrix <- matrix(length(HOBOS_dataset[[river]]$Day),
@@ -1823,10 +1835,10 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
         for (site_step in 1:length(time_step_1)) {
           if(time_step_1[site_step]==1){
             Un_ST_matrix[spa_connections[site_step],
-                         c(spa_connections[1]:spa_connections[numn_nodes])] <- 1*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+                         c(spa_connections[1]:spa_connections[numn_nodes])] <- 1*dist_matr[site_step,]
           }else{
             Un_ST_matrix[spa_connections[site_step],
-                         c(spa_connections[1]:spa_connections[numn_nodes])]<- 0*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+                         c(spa_connections[1]:spa_connections[numn_nodes])]<- 0*dist_matr[site_step,]
           }
         }
       }else{
@@ -1872,7 +1884,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
       diag(All_river_paths) <- 0
       
       if (weighting==T) {
-        All_river_paths <- All_river_paths*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+        All_river_paths <- All_river_paths*dist_matr
       }
       
       Un_ST_matrix[spa_connections[1]:spa_connections[numn_nodes],
@@ -1899,7 +1911,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
             diag(All_river_paths) <- 0
             
             if (weighting==T) {
-            All_river_paths[site_step,] <- All_river_paths[site_step,]*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+            All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]
             }
             
             Un_ST_matrix[spa_connections[site_step],
@@ -1907,7 +1919,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
             
           }else{
             All_river_paths <- matrix(nrow =length(time_step_1),ncol = length(time_step_1),data = value_NO_T_link)
-            All_river_paths[site_step,] <- All_river_paths[site_step,]*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+            All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]
             diag(All_river_paths) <- 0
             Un_ST_matrix[spa_connections[site_step],
                        c(temp_connections[1]):c(temp_connections[numn_nodes])]<- All_river_paths[site_step,]
@@ -1917,7 +1929,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
         #Lost
         if(temp_change==1){
           All_river_paths <- matrix(nrow =length(time_step_1),ncol = length(time_step_1),data = value_NO_T_link)
-          All_river_paths[site_step,] <- All_river_paths[site_step,]*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+          All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]
           diag(All_river_paths) <- 0
           Un_ST_matrix[spa_connections[site_step],
                      c(temp_connections[1]):c(temp_connections[numn_nodes])] <- All_river_paths[site_step,]
@@ -1926,7 +1938,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
         #Gain
         if(temp_change==-1){
           All_river_paths <- matrix(nrow =length(time_step_1),ncol = length(time_step_1),data = value_NO_T_link)
-          All_river_paths[site_step,] <- All_river_paths[site_step,]*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+          All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]
           diag(All_river_paths) <- 0
           Un_ST_matrix[spa_connections[site_step],
                      c(temp_connections[1]):c(temp_connections[numn_nodes])] <- All_river_paths[site_step,]
@@ -1949,7 +1961,7 @@ out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
           diag(All_river_paths) <- 0
           
           if (weighting==T) {
-            All_river_paths[site_step,] <- All_river_paths[site_step,]*as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))[site_step,]
+            All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]
           }
           
           Un_ST_matrix[spa_connections[site_step],
@@ -2007,7 +2019,7 @@ for (river in 1:length(HOBOS_dataset)) {
     out_out_out[rows,] <- (out_out[rows,]+out_out[,rows])/2
   }
   out_out_out[lower.tri(out_out_out)] <- 0
-  #out_out_out <- out_out_out/as.matrix(dist(Sites_coordinates[[river]][,4:3],diag = T,upper = T))
+  #out_out_out <- out_out_out/dist_matr
   # This line above can be used if we want to homogenize the values of distance. But we must bear in mind that this will mean that 
   #the different distances are then "not well considered" as we are dividing each 
   #cell for its distance between two parts - We are "suppressing the weighting". So doing the same as in a Non-Weigted 
