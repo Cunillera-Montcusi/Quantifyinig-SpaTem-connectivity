@@ -1,5 +1,5 @@
 
-# Figure 2
+# Figure 2  ####
 png(filename =paste("Figure/Data_treat/","Figure2",".png"), 
     width = 530*5.5, height = 670*5.5, 
     units = "px",res = 300)
@@ -35,7 +35,7 @@ dev.off()
 
 
 
-# Figure 3
+# Figure 3 ####
 data_PCA <- data.frame(data.frame("STcon A1"=NonW_ST_directed_out$NonW_Dir_con,
                                   "STcon A2"=WEIG_ST_directed_out$WEIG_Dir_con,
                                   "STcon B1"=Un_NonW_ST_out$Un_NonW_con, 
@@ -74,7 +74,7 @@ autoplot(prcomp(data_PCA,
 dev.off()
 #
 
-# Figure 4
+# Figure 4  ####
 png(filename =paste("Figure/Data_treat/Figure4.png"), 
       width = 700*6, height = 650*6, 
       units = "px",res = 350)
@@ -227,7 +227,7 @@ png(filename =paste("Figure/Data_treat/Figure4.png"),
     nrow=5 ,ncol=2,widths=c(0.6,1.1))
   dev.off()
 
-#Figure 5  
+#Figure 5  ####  
 
 # Select each significant plot.   
 
@@ -236,9 +236,7 @@ plots_BID_sign <- list(plots_HOB_BDD_total[[1]][[3]]+labs(title=""),
                        plots_HOB_BDD_total[[1]][[5]]+labs(title="A) Richness"),
                        plots_HOB_BDD_total[[2]][[3]]+labs(title=""),
                        plots_HOB_BDD_total[[2]][[5]]+labs(title="B) Shannon"),
-                       plots_HOB_BDD_total[[3]][[7]]+labs(title="C) Trait abundance"),
-                       plots_HOB_BDD_total[[4]][[4]]+labs(title="D) Pairwise metrics"),
-                       plots_HOB_BDD_total[[5]][[2]]+labs(title=""))
+                       plots_HOB_BDD_total[[5]][[2]]+labs(title="C) Pairwise metrics"))
                       
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
@@ -264,14 +262,9 @@ grid.arrange(
   arrangeGrob( 
     plots_BID_sign[[5]],
     ncol=2, top=""),
-
-  arrangeGrob( 
-    plots_BID_sign[[6]],
-    plots_BID_sign[[7]],
-    ncol=2, top=""),
   
   legend_plots,
-  nrow=5)
+  nrow=4)
 dev.off()
   
 

@@ -681,13 +681,13 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     factors <- STmatrix_BiolDissim%>%select(ID)
     Id_random <- unlist(factors$ID)
     
-    model <- lme(variable_y_model~variable_x, random = ~1|Id_random)
+    model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
     results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
     
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
     
-    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=X_var, y=variable_y,fill=ID,colour=ID))+
+    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
@@ -752,7 +752,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
     
-    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=X_var, y=variable_y,fill=ID,colour=ID))+
+    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
