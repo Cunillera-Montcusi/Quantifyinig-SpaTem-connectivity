@@ -404,28 +404,33 @@ names_scenarios <- c("Scenario A1",
 for (n in 1:length(NonW_ST_matrix_out_out)){
 #Scenario A1 STconmat 
 write.table(rbind(
-            cbind(Scenario=names_scenarios[1],Sites_list[[n]], NonW_ST_matrix_out_out[[n]]),
-            cbind(Scenario=names_scenarios[2],Sites_list[[n]], WEIG_ST_matrix_out_out[[n]]),
-            cbind(Scenario=names_scenarios[3],Sites_list[[n]], Un_NonW_ST_matrix_out_out[[n]]),
-            cbind(Scenario=names_scenarios[4],Sites_list[[n]], Un_WEIG_ST_matrix_out_out[[n]])),
+            cbind(Scenario=names_scenarios[1],Sites_list[[n]], round(NonW_ST_matrix_out_out[[n]],3)),
+            cbind(Scenario=names_scenarios[2],Sites_list[[n]], round(WEIG_ST_matrix_out_out[[n]],3)),
+            cbind(Scenario=names_scenarios[3],Sites_list[[n]], round(Un_NonW_ST_matrix_out_out[[n]],3)),
+            cbind(Scenario=names_scenarios[4],Sites_list[[n]], round(Un_WEIG_ST_matrix_out_out[[n]],3))),
             paste("Table_Results/",unique(Sites_list[[n]][,1]),"stream", "STconmat.txt",sep = "_"), sep = ",")
 }
 
 #Scenario A1 STcon 
+colnames(NonW_ST_directed_out)[3:6] <- c("STcon", "Out closeness", "All closeness", "Betweenness")
 write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
                   Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
-                  NonW_ST_directed_out), "Table_Results/All streams_STcon_A1.txt", sep = "")
+                  NonW_ST_directed_out[,1:2],
+                  round(NonW_ST_directed_out[,3:6],3)), "Table_Results/All streams_STcon_A1.txt", sep = ",")
 #Scenario A2 STcon 
 write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
                         Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
-                  WEIG_ST_directed_out), "Table_Results/All streams_STcon_A2.txt", sep = "")
+                  WEIG_ST_directed_out[,1:2],
+                  round(WEIG_ST_directed_out[,3:6],3)), "Table_Results/All streams_STcon_A2.txt", sep = ",")
 #Scenario B1 STcon 
 write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
                         Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
-                  Un_NonW_ST_out), "Table_Results/All streams_STcon_B1.txt", sep = "")
+                  Un_NonW_ST_out[,1:2],
+                  round(Un_NonW_ST_out[,3:6],3)), "Table_Results/All streams_STcon_B1.txt", sep = ",")
 #Scenario B2 STcon 
 write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
                         Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
-                  Un_WEIG_ST_out), "Table_Results/All streams_STcon_B2.txt", sep = "")
+                  Un_WEIG_ST_out[,1:2],
+                  round(Un_WEIG_ST_out[,3:6],3)), "Table_Results/All streams_STcon_B2.txt", sep = ",")
 
 
