@@ -1,0 +1,49 @@
+---
+title: "tables_output"
+author: "David"
+date: "2/3/2022"
+output:
+  word_document: default
+  html_document: default
+always_allow_html: yes
+---
+
+Tables for results printing 
+```{r setup, echo=T, include=T}
+#knitr::opts_chunk$set(echo = F)
+options(kableExtra.auto_format = FALSE)
+library(kableExtra)
+library(knitr)
+
+# Richness
+Table_result<- read.table("Table_Results/Biol_Rich_STcon.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "Taxonomic Richness")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+# ShannonWiener
+Table_result<- read.table("Table_Results/Biol_ShaWei_STcon.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "Shannon-Wiener diversity")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+# Trait abund.
+Table_result<- read.table("Table_Results/Biol_TraitAb_STcon.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "Trait abundance")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+# Jaccard
+Table_result<- read.table("Table_Results/Biol_BrayC_STconmat.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "Jaccard")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+# BrayCurtis
+Table_result<- read.table("Table_Results/Biol_Jacc_STconmat.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "Bray-Curtis")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+```
+

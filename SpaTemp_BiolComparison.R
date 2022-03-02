@@ -416,6 +416,7 @@ names_scenarios <- c("Scenario A1",
 # 5.1. Richness ####
 plots_HOB_BDD_total <- list()
 plots_HOB_BDD <- list()
+model_HOB_BDD_results <- list()
 for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
@@ -448,6 +449,12 @@ for (variable in 1:ncol(variable_y_temp)) {
   
   model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
   results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+  #Results table
+  model_table <- round(summary(model)[[20]],3)
+  rownames(model_table) <- c("Intercept", "STconmat")
+  model_table<- rownames_to_column(as.data.frame(model_table))
+  model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
+  model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
   
   dataset <- cbind(factors, "X_var"=variable_x, variable_y)
   dataset$pred_values <- predict(model)   
@@ -467,6 +474,13 @@ plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=
     #facet_grid(.~ID)  
   }
 }
+
+model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
+                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
+                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
+                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
+colnames(model_result)[[3]] <- "Fixed effects"
+write.table(model_result, "Table_Results/Biol_Rich_STcon.txt", sep = ",")
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
@@ -488,6 +502,7 @@ plots_HOB_BDD_total[[1]] <- plots_HOB_BDD
 
 # 5.2. Shannon ####
 plots_HOB_BDD <- list()
+model_HOB_BDD_results <- list()
 for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
@@ -520,6 +535,12 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     
     model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
     results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+    #Results table
+    model_table <- round(summary(model)[[20]],3)
+    rownames(model_table) <- c("Intercept", "STconmat")
+    model_table<- rownames_to_column(as.data.frame(model_table))
+    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
+    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
     
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
@@ -539,6 +560,13 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     #facet_grid(.~ID)  
   }
 }
+
+model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
+                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
+                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
+                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
+colnames(model_result)[[3]] <- "Fixed effects"
+write.table(model_result, "Table_Results/Biol_ShaWei_STcon.txt", sep = ",")
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
@@ -561,6 +589,7 @@ plots_HOB_BDD_total[[2]] <- plots_HOB_BDD
 
 # 5.3. Trait abund. ####
 plots_HOB_BDD <- list()
+model_HOB_BDD_results <- list()
 for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
@@ -593,6 +622,12 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     
     model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
     results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+    #Results table
+    model_table <- round(summary(model)[[20]],3)
+    rownames(model_table) <- c("Intercept", "STconmat")
+    model_table<- rownames_to_column(as.data.frame(model_table))
+    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
+    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
     
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
@@ -612,6 +647,13 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     #facet_grid(.~ID)  
   }
 }
+
+model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
+                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
+                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
+                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
+colnames(model_result)[[3]] <- "Fixed effects"
+write.table(model_result, "Table_Results/Biol_TraitAb_STcon.txt", sep = ",")
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y ,fill=ID),shape=21, size=6)+
@@ -657,6 +699,7 @@ STmatrix_BiolDissim <- output
 
 # 5.4.1. Plot Bray ####
 plots_HOB_BDD <- list()
+model_HOB_BDD_results <- list()
 for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
@@ -683,7 +726,12 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     
     model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
     results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
-    
+    #Results table
+    model_table <- round(summary(model)[[20]],3)
+    rownames(model_table) <- c("Intercept", "STconmat")
+    model_table<- rownames_to_column(as.data.frame(model_table))
+    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
+    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
     
@@ -702,6 +750,13 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     #facet_grid(.~ID)  
   }
 }
+
+model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
+                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
+                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
+                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
+colnames(model_result)[[3]] <- "Fixed effects"
+write.table(model_result, "Table_Results/Biol_BrayC_STconmat.txt", sep = ",")
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
@@ -722,6 +777,7 @@ plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 
 # 5.4.2. Plot Jaccard ####
 plots_HOB_BDD <- list()
+model_HOB_BDD_results <- list()
 for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
@@ -737,6 +793,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
   variable_y_temp <- STmatrix_BiolDissim%>%select(Jaccard_Act,Jaccard_Pas)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
+  Dispersal_group <- c("Active", "Passive")
   for (variable in 1:ncol(variable_y_temp)) {
     
     variable_y <- variable_y_temp[,variable]
@@ -748,6 +805,12 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     
     model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
     results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
+    #Results table
+    model_table <- round(summary(model)[[20]],3)
+    rownames(model_table) <- c("Intercept", "STconmat")
+    model_table<- rownames_to_column(as.data.frame(model_table))
+    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
+    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
     
     dataset <- cbind(factors, "X_var"=variable_x, variable_y)
     dataset$pred_values <- predict(model)   
@@ -767,6 +830,14 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     #facet_grid(.~ID)  
   }
 }
+
+model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
+                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
+                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
+                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
+colnames(model_result)[[3]] <- "Fixed effects"
+write.table(model_result, "Table_Results/Biol_Jacc_STconmat.txt", sep = ",")
+
 
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+

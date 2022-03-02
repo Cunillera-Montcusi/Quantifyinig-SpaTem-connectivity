@@ -385,6 +385,7 @@ Un_WEIG_ST_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,Un_WEIG_ST_output)%>%
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 6. Final values__________________________________________________________________ ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
 NonW_ST_matrix_out_out
 WEIG_ST_matrix_out_out
 Un_NonW_ST_matrix_out_out
@@ -394,3 +395,37 @@ NonW_ST_directed_out
 WEIG_ST_directed_out
 Un_NonW_ST_out
 Un_WEIG_ST_out
+
+# Result printing outputs
+names_scenarios <- c("Scenario A1",
+                     "Scenario A2",
+                     "Scenario B1",
+                     "Scenario B2")
+for (n in 1:length(NonW_ST_matrix_out_out)){
+#Scenario A1 STconmat 
+write.table(rbind(
+            cbind(Scenario=names_scenarios[1],Sites_list[[n]], NonW_ST_matrix_out_out[[n]]),
+            cbind(Scenario=names_scenarios[2],Sites_list[[n]], WEIG_ST_matrix_out_out[[n]]),
+            cbind(Scenario=names_scenarios[3],Sites_list[[n]], Un_NonW_ST_matrix_out_out[[n]]),
+            cbind(Scenario=names_scenarios[4],Sites_list[[n]], Un_WEIG_ST_matrix_out_out[[n]])),
+            paste("Table_Results/",unique(Sites_list[[n]][,1]),"stream", "STconmat.txt",sep = "_"), sep = ",")
+}
+
+#Scenario A1 STcon 
+write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
+                  Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
+                  NonW_ST_directed_out), "Table_Results/All streams_STcon_A1.txt", sep = "")
+#Scenario A2 STcon 
+write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
+                        Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
+                  WEIG_ST_directed_out), "Table_Results/All streams_STcon_A2.txt", sep = "")
+#Scenario B1 STcon 
+write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
+                        Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
+                  Un_NonW_ST_out), "Table_Results/All streams_STcon_B1.txt", sep = "")
+#Scenario B2 STcon 
+write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
+                        Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
+                  Un_WEIG_ST_out), "Table_Results/All streams_STcon_B2.txt", sep = "")
+
+

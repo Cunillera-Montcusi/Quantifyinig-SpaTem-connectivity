@@ -1,0 +1,75 @@
+---
+title: "tables_output"
+author: "David"
+date: "2/3/2022"
+output:
+  word_document: default
+  html_document: default
+always_allow_html: yes
+---
+
+Tables for results printing 
+```{r setup, echo=T, include=T}
+#knitr::opts_chunk$set(echo = F)
+options(kableExtra.auto_format = FALSE)
+library(kableExtra)
+library(knitr)
+
+# STcon
+#Scenario A1 STcon 
+Table_result<- read.table("Table_Results/All streams_STcon_A1.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "STcon Scenario A1")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+#Scenario A2 STcon 
+Table_result<- read.table("Table_Results/All streams_STcon_A2.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "STcon Scenario A2")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+#Scenario B1 STcon 
+Table_result<- read.table("Table_Results/All streams_STcon_B1.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "STcon Scenario B1")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+#Scenario B2 STcon 
+Table_result<- read.table("Table_Results/All streams_STcon_B2.txt", sep = ",")
+
+knitr::kable(Table_result, caption = "STcon Scenario B2")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+
+
+#STconmat
+#C
+Table_result<- read.table("Table_Results/_C_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "C stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+#M
+Table_result<- read.table("Table_Results/_M_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "M stream STconmat ")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+#R
+Table_result<- read.table("Table_Results/_R_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "R stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left") 
+#SA
+Table_result<- read.table("Table_Results/_SA_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "SA stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left")
+#SC
+Table_result<- read.table("Table_Results/_SC_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "SC stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left")
+#T
+Table_result<- read.table("Table_Results/_T_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "T stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left")
+#VH
+Table_result<- read.table("Table_Results/_VH_stream_STconmat.txt", sep = ",")
+knitr::kable(Table_result, caption = "VH stream STconmat")%>%
+       kable_styling(bootstrap_options = "striped",full_width = F, position="left")
+
+```
+
