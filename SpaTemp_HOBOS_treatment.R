@@ -11,14 +11,22 @@ colnames(Sites) <- c("Riera", "Codi_HOBO","Latitud","Longitud")
 #Correction for matching HOBOS -- collecting the  coordinates of the HOBOS that we have  
 for (hob in 1:nrow(Sites)) {
   Matching_HOBOS<- which(as.matrix(dist(Sites[,3:4]))[,hob]==0)
-  Random_addition <- rep(seq(0.5,3.5,0.5),nrow(Sites))
-  Sites[hob,3:4] <- Sites[hob,3:4]+Random_addition[hob]
+  if (length(Matching_HOBOS)>1) {
+    Matching_HOBOS <- Matching_HOBOS[-hob]
+    Random_addition <- sample(rep(seq(0.5,5.5,0.5),nrow(Sites)),length(Matching_HOBOS)*2)
+    Sites[Matching_HOBOS,3:4] <- Sites[Matching_HOBOS,3:4]+Random_addition
+  }
 }
 #Checking
-which(as.matrix(dist(Sites[,3:4]))[,1]==0)
-plot(Sites$Latitud, Sites$Longitud)
+length(which(as.matrix(dist(Sites[,3:4]))==0))
+length(diag(as.matrix(dist(Sites[,3:4]))))
+plot(Sites$Longitud, Sites$Latitud)
 
-#Charge HOBOS database
+# We upload the HOBO dataset (1 and 0 defining wet/dry moments)
+# We upload the order of the rivers from Upstream to Downstream to arrange the HOBOS into the desired order
+## IMPORTANT: This order will also define the direction of the river! 
+## The first HOBO in the row of the "Sites_list" must be the first HOBO in the Column of "HOBOS_sites"
+
 HOBOS_sites <- list(
   read.csv("Raw_HOBOS_Database/CA_HOBOS_data.csv", header = T, sep = ";"),
   read.csv("Raw_HOBOS_Database/M_HOBOS_data.csv", header = T, sep = ";"),
@@ -28,29 +36,27 @@ HOBOS_sites <- list(
   read.csv("Raw_HOBOS_Database/T_HOBOS_data.csv", header = T, sep = ";"),
   read.csv("Raw_HOBOS_Database/VH_HOBOS_data.csv", header = T, sep = ";"))
 
+#Stream order to check
+Stream_order <- read.csv("Raw_HOBOS_Database/Stream Order.csv", header = T, sep = ";")
+
+library(dplyr)
 # PLotting HOBOS altogether (make the plot window bigger)
 par(mfrow=c(3,3))
 local_hobos_list <- list()
+Sites_list <- list()
 for (sit in 1:length(HOBOS_sites)) {
   colnames(HOBOS_sites[[sit]])[1] <- c("Day")
   names_hobos <- colnames(HOBOS_sites[[sit]])[2:length(colnames(HOBOS_sites[[sit]]))]
   local_hobos <- c()
-  for (nam in 1:length(names_hobos)) {
-    local_hobos[nam] <- which(Sites$Codi_HOBO==names_hobos[nam])  
-  }
-  local_hobos_list[[sit]] <- local_hobos
-  plot(Sites$Latitud[local_hobos], Sites$Longitud[local_hobos])
+  Sites_list[[sit]] <- Sites%>%filter(Codi_HOBO%in%names_hobos)%>%
+                               left_join(Stream_order, by="Codi_HOBO")%>%
+                               arrange(UtoD)%>%
+                               dplyr::select(Riera,Codi_HOBO,Latitud,Longitud)
+plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
 }
 par(mfrow=c(1,1))
 
-Sites_list <- list(
-  Sites[local_hobos_list[[1]],],
-  Sites[local_hobos_list[[2]],],
-  Sites[local_hobos_list[[3]],],
-  Sites[local_hobos_list[[4]],],
-  Sites[local_hobos_list[[5]],],
-  Sites[local_hobos_list[[6]],],
-  Sites[local_hobos_list[[7]],])
+Sites_list
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 2. Dates selection ####
@@ -356,36 +362,35 @@ Un_WEIG_ST_output <- data.frame(Un_WEIG_con=unlist(Un_WEIG_ST_connectivity_value
                                 Un_WEIG_Bet=unlist(Un_WEIG_ST_Betclo_mean))
 
 
-# Extract number of "HOBOS" per river and directionality to build the data.frames
-n_each_riv <- c()
-HOB_riv_ID <- c()
-ups_dos <- c()
-for (n in 1:length(Sites_list)) {
-  # Vector with n sites 
-  n_each_riv[n] <- nrow(Sites_list[[n]])
-  # Sequence from upstream to downstream
-  val_ups_dos <- seq(1,n_each_riv[n])
-  ups_dos <- c(ups_dos,val_ups_dos)
-  # ID of each stream
-  ID <- Sites_list[[n]][,1]
-  HOB_riv_ID <- c(HOB_riv_ID,ID)
-}
-
-# Final values INDIVIDUAL HOBOS dataframe construction
-NonW_ST_directed_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,NonW_ST_directed_output)%>%
-  mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
-WEIG_ST_directed_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,WEIG_ST_directed_output)%>%
-  mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
-Un_NonW_ST_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,Un_NonW_ST_output)%>%
-  mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
-Un_WEIG_ST_out <- data.frame(ID=HOB_riv_ID,DtoU=ups_dos,Un_WEIG_ST_output)%>%
-  mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 6. Final values__________________________________________________________________ ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# We add the stream ID and the order (UtoD) to each output to later analyse them. 
+# We retrieve this information from the "Stream_order" dataset where each HOBO code, Stram and its position on the 
+#upstream downstream direction were registered
+# This two following vectors are created for being used in other scripts
+HOB_riv_ID<- Stream_order$ï..Riera
+ups_dos <- Stream_order$UtoD
 
+NonW_ST_directed_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+                                   NonW_ST_directed_output)%>%
+                        mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
+
+WEIG_ST_directed_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+                                   WEIG_ST_directed_output)%>%
+                        mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
+
+Un_NonW_ST_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+                             Un_NonW_ST_output)%>%
+                        mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
+
+Un_WEIG_ST_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+                             Un_WEIG_ST_output)%>%
+                        mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
+
+# Final values HOBOS dataframe
 NonW_ST_matrix_out_out
 WEIG_ST_matrix_out_out
 Un_NonW_ST_matrix_out_out

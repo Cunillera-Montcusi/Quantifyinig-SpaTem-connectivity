@@ -266,14 +266,13 @@ png(filename =paste("Figure/Data_treat/",names_approxim[a],".png"),
       width = 700*4, height = 600*4, 
       units = "px",res = 300)
 
-  
 rows_filter <- unlist(c(four_approxim[[a]]%>%
                           mutate(files=1:nrow(.))%>%
                           group_by(ID)%>%
                           mutate(maxim=max(DtoU), value=DtoU/maxim)%>%
                           filter(value==1)%>%
                           ungroup()%>%
-                          select(files)))
+                          dplyr::select(files)))
     
 grid.arrange(
   ggplot(data = four_approxim[[a]][-rows_filter,])+

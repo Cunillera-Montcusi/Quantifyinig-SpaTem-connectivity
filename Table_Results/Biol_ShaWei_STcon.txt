@@ -1,0 +1,17 @@
+"Scenario","Dispersion","Fixed effects","Value","Std.Error","DF","t-value","p-value"
+"1","Scenario A1","Active","Intercept",0.783,0.132,17,5.939,0
+"2","Scenario A1","Active","STconmat",0.169,0.161,17,1.047,0.31
+"3","Scenario A2","Active","Intercept",0.88,0.133,17,6.6,0
+"4","Scenario A2","Active","STconmat",0,0.016,17,0.013,0.99
+"5","Scenario B1","Active","Intercept",0.244,0.267,17,0.914,0.374
+"6","Scenario B1","Active","STconmat",0.344,0.14,17,2.467,0.025
+"7","Scenario B2","Active","Intercept",1.603,1.046,17,1.533,0.144
+"8","Scenario B2","Active","STconmat",-0.077,0.111,17,-0.694,0.497
+"9","Scenario A1","Passive","Intercept",0.852,0.106,17,8.005,0
+"10","Scenario A1","Passive","STconmat",0.111,0.102,17,1.096,0.289
+"11","Scenario A2","Passive","Intercept",0.896,0.106,17,8.477,0
+"12","Scenario A2","Passive","STconmat",0.004,0.01,17,0.381,0.708
+"13","Scenario B1","Passive","Intercept",0.422,0.208,17,2.03,0.058
+"14","Scenario B1","Passive","STconmat",0.271,0.108,17,2.499,0.023
+"15","Scenario B2","Passive","Intercept",0.753,0.799,17,0.943,0.359
+"16","Scenario B2","Passive","STconmat",0.017,0.085,17,0.205,0.84

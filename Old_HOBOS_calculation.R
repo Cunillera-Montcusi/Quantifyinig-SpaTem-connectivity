@@ -75,10 +75,6 @@ Old_HOBOS_comb
 
 # We upload the used dataset (original Fric, Fdis and FR)
 data <- read.csv("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/1. David Pineda HYDR/Models NULS/VARIABLES.csv", sep=";")
-x_data <- data
-
-x_data <- select(x_data, c(Site,MeanDur,TotNum))%>%arrange(Site)
-
 
 
 

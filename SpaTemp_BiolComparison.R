@@ -9,6 +9,7 @@ library(car)
 library(multcompView)
 library(ade4)
 library(vegan)
+detach("package:plyr", unload = TRUE)
 
 ### IMPORTANT: TO PROPERLY RUN THIS SCRIPT YOU NEED TO RUN the following scripts: 
 
@@ -31,12 +32,9 @@ library(vegan)
 ### 3 SpaTemp_comparison.R
 ### 4 SpaTemp_Biolcomparison.R
 
-
 # Nice colors? CUNILLERA_palette is what you need
 source("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/CUNILLERA_palette.R")
-
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
-
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 1. BIOLOGICAL Data uploading ####
@@ -95,13 +93,13 @@ bloc<-read.table("BiolData/trait.blocks.txt",h=T)
 # Filter species that are present or not present existing 
 out <- c()
 for (i in 1:length(rownames(Traits_val))) {
-  temp_out <- which(rownames(Traits_val)==colnames(BDD%>%select(-Date,-Riera,-Code,))[i])
+  temp_out <- which(rownames(Traits_val)==colnames(BDD%>%dplyr::select(-Date,-Riera,-Code,))[i])
   out[i] <- ifelse(length(temp_out)>0,temp_out,0)
 }
 Trait_matr_prep<-prep.fuzzy.var(Traits_val[out,],bloc$bloc)
 apply(Trait_matr_prep,1,sum)
 
-BDD_croped <- BDD%>%select(matches(rownames(Trait_matr_prep)))
+BDD_croped <- BDD%>%dplyr::select(matches(rownames(Trait_matr_prep)))
 rownames(BDD_croped) <-BDD$Code
 
 for(i in 1:nrow(BDD_croped)){BDD_croped[i,]<- BDD_croped[i,]/sum(BDD_croped[i,])}
@@ -117,14 +115,14 @@ Trait_abund_f1 <- data.frame("Code"=BDD$Code,"Date"=BDD$Date,"Riera"=BDD$Riera, 
 Traits_val_edited <- data.frame("taxon"=row.names(Traits_val),Traits_val)
 
 # Active dispersers -- f4==3 and 2
-Trait_disp <- Traits_val_edited%>%select(taxon,f4)%>%filter(f4==3)%>%
-  rows_insert(Traits_val_edited%>%select(taxon,f4)%>%filter(f4==2))
-BDD_activ <- BDD%>%select(Code, Date, Riera,matches(Trait_disp$taxon))
+Trait_disp <- Traits_val_edited%>%dplyr::select(taxon,f4)%>%filter(f4==3)%>%
+  rows_insert(Traits_val_edited%>%dplyr::select(taxon,f4)%>%filter(f4==2))
+BDD_activ <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
 
 # Passive dispersers -- f1==3 and 2
-Trait_disp <- Traits_val_edited%>%select(taxon,f1)%>%filter(f1==3)
-#%>%rows_insert(Traits_val_edited%>%select(taxon,f1)%>%filter(f1==2))
-BDD_pass <- BDD%>%select(Code, Date, Riera,matches(Trait_disp$taxon))
+Trait_disp <- Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==3)%>%
+  rows_insert(Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==2))
+BDD_pass <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
 
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -133,7 +131,7 @@ BDD_pass <- BDD%>%select(Code, Date, Riera,matches(Trait_disp$taxon))
 
 # 2.1 Active dispersers ####
 Data_season <- BDD_activ %>%
-                select(-Date,-Riera)%>%
+                dplyr::select(-Date,-Riera)%>%
                 pivot_longer(-Code)
 
 colnames(Data_season) <- c("Code","Species","Abund")
@@ -158,13 +156,13 @@ table_shannon <- by_group_data_season%>%
                  spread(key =Species,value = Abund, fill=0)%>%
                  bind_cols("Riera"=BDD_activ$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%select(-Code,-Riera),index = "shannon")
+shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES active ________________________________________________________________________####
 
 table_shannon_PA <- by_group_data_season%>%
   mutate(PA=ifelse(Abund>0,1,0))%>%
-  select(-Abund)%>%
+  dplyr::select(-Abund)%>%
   spread(key =Species,value = PA, fill=0)%>%
   bind_cols("Riera"=BDD_activ$Riera)
 
@@ -176,14 +174,14 @@ for (riera in 1:length(unique(table_shannon$Riera))) {
   # Bray Curtis active
   Bray.distance[[riera]] <- vegdist(
                           decostand(table_shannon%>%
-                                      filter(Riera==names_riera[riera])%>%ungroup()%>%select(-Code,-Riera),
+                                      filter(Riera==names_riera[riera])%>%ungroup()%>%dplyr::select(-Code,-Riera),
                           method = "hellinger"),
                           method = "bray")
   
   # Jaccard active
   Jac.distance[[riera]]<-vegdist(
                         decostand(table_shannon_PA%>%
-                                    filter(Riera==names_riera[riera])%>%ungroup()%>%select(-Code,-Riera),
+                                    filter(Riera==names_riera[riera])%>%ungroup()%>%dplyr::select(-Code,-Riera),
                         method = "pa"),
                         method = "jaccard")
   }
@@ -197,7 +195,7 @@ BID_output_DIST_act <- list(Bray.distance,Jac.distance)
 
 # 2.2 Passive dispersers ####
 Data_season <- BDD_pass %>%
-  select(-Date,-Riera)%>%
+  dplyr::select(-Date,-Riera)%>%
   pivot_longer(-Code)
 
 colnames(Data_season) <- c("Code","Species","Abund")
@@ -222,13 +220,13 @@ table_shannon <- by_group_data_season%>%
   spread(key =Species,value = Abund, fill=0)%>%
   bind_cols("Riera"=BDD_pass$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%select(-Code,-Riera),index = "shannon")
+shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES passive ________________________________________________________________________####
 
 table_shannon_PA <- by_group_data_season%>%
   mutate(PA=ifelse(Abund>0,1,0))%>%
-  select(-Abund)%>%
+  dplyr::select(-Abund)%>%
   spread(key =Species,value = PA, fill=0)%>%
   bind_cols("Riera"=BDD_pass$Riera)
 
@@ -240,14 +238,14 @@ for (riera in 1:length(unique(table_shannon$Riera))) {
   # Bray Curtis
   Bray.distance[[riera]] <- vegdist(
     decostand(table_shannon%>%
-                filter(Riera==names_riera[riera])%>%ungroup()%>%select(-Code,-Riera),
+                filter(Riera==names_riera[riera])%>%ungroup()%>%dplyr::select(-Code,-Riera),
               method = "hellinger"),
     method = "bray")
   
   # Jaccard
   Jac.distance[[riera]]<-vegdist(
     decostand(table_shannon_PA%>%
-                filter(Riera==names_riera[riera])%>%ungroup()%>%select(-Code,-Riera),
+                filter(Riera==names_riera[riera])%>%ungroup()%>%dplyr::select(-Code,-Riera),
               method = "pa"),
     method = "jaccard")
 }
@@ -286,8 +284,8 @@ HOBOS_sites# They are charged from SpaTemp_HOBOS_treatment.R
 # This two other objects are also built in the "SpaTemp_HOBOS_treatment.R" script. They contain the names 
 ## of each river and the order upstream to downstream within it. 
 # They are used to Identify and locate river position between HOBOS and real Samples
-HOB_riv_ID
-ups_dos
+HOB_riv_ID<- Stream_order$ï..Riera
+ups_dos <- Stream_order$UtoD
 
 # Calculation of OLD HOBOS values to include them in the comparisons. 
 source("Old_HOBOS_calculation.R")
@@ -366,7 +364,7 @@ Un_WEIG<- list()
 for (riera in 1:length(unique(NonW_ST_matrix_out_out))) {
   names_riera <- unique(Sites_list_comb$ID)
   
-  values_places <- unlist(HOB_BDD_match%>%filter(ID==names_riera[riera])%>%select(DtoU))
+  values_places <- unlist(HOB_BDD_match%>%filter(ID==names_riera[riera])%>%dplyr::select(DtoU))
   
   NonW_Dir[[riera]] <- as.dist(t(NonW_ST_matrix_out_out[[riera]][values_places,values_places]))
   WEIG_Dir[[riera]] <- as.dist(t(WEIG_ST_matrix_out_out[[riera]][values_places,values_places]))
@@ -395,7 +393,7 @@ HOB_BDD_match
 HOB_BDD_match_matrix
 
 ### *SMALL EDITIONS TO ELIMINATE Ocl/Acl/Bet ####
-HOB_BDD_match <- HOB_BDD_match%>%select(-c(NonW_Dir_Ocl,NonW_Dir_Acl,NonW_Dir_Bet,
+HOB_BDD_match <- HOB_BDD_match%>%dplyr::select(-c(NonW_Dir_Ocl,NonW_Dir_Acl,NonW_Dir_Bet,
                                            WEIG_Dir_Ocl,WEIG_Dir_Acl,WEIG_Dir_Bet,
                                            Un_NonW_Ocl,Un_NonW_Acl,Un_NonW_Bet,
                                            Un_WEIG_Ocl,Un_WEIG_Acl,Un_WEIG_Bet))
@@ -417,7 +415,7 @@ names_scenarios <- c("Scenario A1",
 plots_HOB_BDD_total <- list()
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
                                               -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -425,7 +423,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -rich_f1,-shan_f1,-f1_abun))){
 
   
-  variable_x_temp <- HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+  variable_x_temp <- HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                        -Latitud,-Longitud,
                                        -ID, -DtoU,-ID_UpDo,
                                        -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -435,7 +433,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
   variable_x_name <- colnames(variable_x_temp)[col_var]
   variable_x <- variable_x_temp[,col_var]
   
-  variable_y_temp <- HOB_BDD_match%>%select(rich_f4,rich_f1)
+  variable_y_temp <- HOB_BDD_match%>%dplyr::select(rich_f4,rich_f1)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
 for (variable in 1:ncol(variable_y_temp)) {
@@ -444,7 +442,7 @@ for (variable in 1:ncol(variable_y_temp)) {
   variable_y_model <- unlist(variable_y)
   variable_y_name <- colnames(variable_y_temp)
   
-  factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
+  factors <- HOB_BDD_match%>%dplyr::select(ID, DtoU,ID_UpDo)
   Id_random <- unlist(factors$ID)
   
   model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
@@ -503,7 +501,7 @@ plots_HOB_BDD_total[[1]] <- plots_HOB_BDD
 # 5.2. Shannon ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
                                               -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -511,7 +509,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -rich_f1,-shan_f1,-f1_abun))){
   
   
-  variable_x_temp <- HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+  variable_x_temp <- HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                             -Latitud,-Longitud,
                                             -ID, -DtoU,-ID_UpDo,
                                             -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -521,7 +519,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
   variable_x_name <- colnames(variable_x_temp)[col_var]
   variable_x <- variable_x_temp[,col_var]
   
-  variable_y_temp <- HOB_BDD_match%>%select(shan_f4,shan_f1)
+  variable_y_temp <- HOB_BDD_match%>%dplyr::select(shan_f4,shan_f1)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
   for (variable in 1:ncol(variable_y_temp)) {
@@ -530,7 +528,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     variable_y_model <- unlist(variable_y)
     variable_y_name <- colnames(variable_y_temp)
     
-    factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
+    factors <- HOB_BDD_match%>%dplyr::select(ID, DtoU,ID_UpDo)
     Id_random <- unlist(factors$ID)
     
     model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
@@ -590,7 +588,7 @@ plots_HOB_BDD_total[[2]] <- plots_HOB_BDD
 # 5.3. Trait abund. ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                               -Latitud,-Longitud,
                                               -ID, -DtoU,-ID_UpDo,
                                               -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -598,7 +596,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
                                               -rich_f1,-shan_f1,-f1_abun))){
   
   
-  variable_x_temp <- HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
+  variable_x_temp <- HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
                                             -Latitud,-Longitud,
                                             -ID, -DtoU,-ID_UpDo,
                                             -Samp_ID, -TotDur, -TotNum, -TotLeng, 
@@ -608,7 +606,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
   variable_x_name <- colnames(variable_x_temp)[col_var]
   variable_x <- variable_x_temp[,col_var]
   
-  variable_y_temp <- HOB_BDD_match%>%select(f4_abun,f1_abun)
+  variable_y_temp <- HOB_BDD_match%>%dplyr::select(f4_abun,f1_abun)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
   for (variable in 1:ncol(variable_y_temp)) {
@@ -617,7 +615,7 @@ for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
     variable_y_model <- unlist(variable_y)
     variable_y_name <- colnames(variable_y_temp)
     
-    factors <- HOB_BDD_match%>%select(ID, DtoU,ID_UpDo)
+    factors <- HOB_BDD_match%>%dplyr::select(ID, DtoU,ID_UpDo)
     Id_random <- unlist(factors$ID)
     
     model <- lme(log(variable_y_model+1)~log(variable_x+1), random = ~1|Id_random)
@@ -690,7 +688,7 @@ for (lis_elem in 1:length(HOB_BDD_match_matrix)) {
   colnames(out)[2] <- names(HOB_BDD_match_matrix)[lis_elem]
   output[,1] <- out[,1]
   output <- as.data.frame(cbind(output, out))
-  output <- output%>%select(-ID)
+  output <- output%>%dplyr::select(-ID)
   output[,lis_elem+1] <- as.numeric(output[,lis_elem+1])
 }
 colnames(output)[1] <- "ID"
@@ -700,19 +698,19 @@ STmatrix_BiolDissim <- output
 # 5.4.1. Plot Bray ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
+for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
   
   
-  variable_x_temp <- STmatrix_BiolDissim%>%select(-ID,
+  variable_x_temp <- STmatrix_BiolDissim%>%dplyr::select(-ID,
                                              -BrayCurtis_Act, -Jaccard_Act,
                                              -BrayCurtis_Pas, -Jaccard_Pas)
 
   variable_x_name <- colnames(variable_x_temp)[col_var]
   variable_x <- variable_x_temp[,col_var]
   
-  variable_y_temp <- STmatrix_BiolDissim%>%select(BrayCurtis_Act,BrayCurtis_Pas)
+  variable_y_temp <- STmatrix_BiolDissim%>%dplyr::select(BrayCurtis_Act,BrayCurtis_Pas)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
   for (variable in 1:ncol(variable_y_temp)) {
@@ -721,7 +719,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     variable_y_model <- unlist(variable_y)
     variable_y_name <- colnames(variable_y_temp)
     
-    factors <- STmatrix_BiolDissim%>%select(ID)
+    factors <- STmatrix_BiolDissim%>%dplyr::select(ID)
     Id_random <- unlist(factors$ID)
     
     model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
@@ -778,19 +776,19 @@ plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 # 5.4.2. Plot Jaccard ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
+for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
   
   
-  variable_x_temp <- STmatrix_BiolDissim%>%select(-ID,
+  variable_x_temp <- STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                   -BrayCurtis_Act, -Jaccard_Act,
                                                   -BrayCurtis_Pas, -Jaccard_Pas)
   
   variable_x_name <- colnames(variable_x_temp)[col_var]
   variable_x <- variable_x_temp[,col_var]
   
-  variable_y_temp <- STmatrix_BiolDissim%>%select(Jaccard_Act,Jaccard_Pas)
+  variable_y_temp <- STmatrix_BiolDissim%>%dplyr::select(Jaccard_Act,Jaccard_Pas)
   plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
   
   Dispersal_group <- c("Active", "Passive")
@@ -800,7 +798,7 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%select(-ID,
     variable_y_model <- unlist(variable_y)
     variable_y_name <- colnames(variable_y_temp)
     
-    factors <- STmatrix_BiolDissim%>%select(ID)
+    factors <- STmatrix_BiolDissim%>%dplyr::select(ID)
     Id_random <- unlist(factors$ID)
     
     model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
