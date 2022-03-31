@@ -235,17 +235,14 @@ plots_BID_sign <- list(# Plots sign richness
                        plots_HOB_BDD_total[[1]][[6]]+labs(title="A) Richness", subtitle = "Scenario A2 Passive dispersers"),
                        plots_HOB_BDD_total[[1]][[7]]+labs(title="", subtitle = "Scenario B1 Passive dispersers"),
                        # Shannon
-                       plots_HOB_BDD_total[[2]][[3]]+labs(title="", subtitle = "Scenario B1 Active dispersers" ),
-                       plots_HOB_BDD_total[[2]][[7]]+labs(title="B) Shannon", subtitle = "Scenario B1 Passive dispersers"),
+                       plots_HOB_BDD_total[[2]][[3]]+labs(title="B) Shannon", subtitle = "Scenario B1 Active dispersers" ),
                        # Trait ab.
-                       plots_HOB_BDD_total[[3]][[2]]+labs(title="", subtitle = "Scenario A2 Active dispersers"),
                        plots_HOB_BDD_total[[3]][[7]]+labs(title="C) Trait abundance", subtitle = "Scenario B1 Passive dispersers"),
                        #BrayC
                        plots_HOB_BDD_total[[4]][[3]]+labs(title="D) Bray-curtis", subtitle = "Scenario B1 Active dispersers"),
                        plots_HOB_BDD_total[[4]][[4]]+labs(title="", subtitle = "Scenario B2 Active dispersers"),
                        #Jaccard
                        plots_HOB_BDD_total[[5]][[2]]+labs(title="", subtitle = "Scenario A2 Active dispersers"),
-                       plots_HOB_BDD_total[[5]][[3]]+labs(title="", subtitle = "Scenario B1 Active dispersers"),
                        plots_HOB_BDD_total[[5]][[4]]+labs(title="", subtitle = "Scenario B2 Active dispersers"),
                        plots_HOB_BDD_total[[5]][[6]]+labs(title="E) Jaccard", subtitle = "Scenario A2 Passive dispersers"),
                        plots_HOB_BDD_total[[5]][[8]]+labs(title="", subtitle = "Scenario B2 Passive dispersers"))
@@ -257,49 +254,31 @@ legend_plots<- get_legend(ggplot(dataset)+
                                                   legend.box="horizontal"))
 
 
-png(filename =paste("Figure/Data_treat/Figure5A.png"), 
-    width = 650*4, height = 1100*4, 
+png(filename =paste("Figure/Data_treat/Figure5.png"), 
+    width = 850*4, height = 750*4, 
     units = "px",res = 300)
 grid.arrange(
   arrangeGrob( 
     plots_BID_sign[[2]], 
     plots_BID_sign[[3]],
     plots_BID_sign[[1]],
-    ncol=3, top=""), 
+    legend_plots,
+    ncol=4, top=""), 
   
   arrangeGrob( 
-    plots_BID_sign[[5]],
     plots_BID_sign[[4]],
-    ncol=3, top=""),
+    plots_BID_sign[[5]],
+    plots_BID_sign[[6]],
+    plots_BID_sign[[7]],
+    ncol=4, top=""),
   
   arrangeGrob( 
-    plots_BID_sign[[7]],
-    plots_BID_sign[[6]],
-    ncol=3, top=""),
-  legend_plots,
-  nrow=4)
+    plots_BID_sign[[10]],
+    plots_BID_sign[[11]],
+    plots_BID_sign[[8]],
+    plots_BID_sign[[9]],
+    ncol=4, top=""),
+
+  nrow=3)
 dev.off()
-  
 
-png(filename =paste("Figure/Data_treat/Figure5B.png"), 
-    width = 650*4, height = 1100*4, 
-    units = "px",res = 300)
-grid.arrange(
-arrangeGrob( 
-  plots_BID_sign[[8]],
-  plots_BID_sign[[9]],
-  ncol=3, top=""),
-
-arrangeGrob( 
-  plots_BID_sign[[13]],
-  plots_BID_sign[[14]],
-  plots_BID_sign[[10]],
-  ncol=3, top=""),
-
-arrangeGrob( 
-  plots_BID_sign[[11]],
-  plots_BID_sign[[12]],
-  ncol=3, top=""),
-legend_plots,
-nrow=4)
-dev.off()

@@ -5,19 +5,10 @@
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
 source("SpaTemp_HOBOS_function.R")
 
-Sites <- read.csv("Raw_HOBOS_Database/Longlat_Rius.csv", header = T, sep = ";")
+Sites <- read.csv("Raw_HOBOS_Database/Longlat_Rius.csv", header = T, sep = ";", dec = ",")
 colnames(Sites) <- c("Riera", "Codi_HOBO","Latitud","Longitud")
 
 #Correction for matching HOBOS -- collecting the  coordinates of the HOBOS that we have  
-for (hob in 1:nrow(Sites)) {
-  Matching_HOBOS<- which(as.matrix(dist(Sites[,3:4]))[,hob]==0)
-  if (length(Matching_HOBOS)>1) {
-    Matching_HOBOS <- Matching_HOBOS[-hob]
-    Random_addition <- sample(rep(seq(0.5,5.5,0.5),nrow(Sites)),length(Matching_HOBOS)*2)
-    Sites[Matching_HOBOS,3:4] <- Sites[Matching_HOBOS,3:4]+Random_addition
-  }
-}
-#Checking
 length(which(as.matrix(dist(Sites[,3:4]))==0))
 length(diag(as.matrix(dist(Sites[,3:4]))))
 plot(Sites$Longitud, Sites$Latitud)
@@ -417,7 +408,6 @@ write.table(rbind(
 }
 
 #Scenario A1 STcon 
-colnames(NonW_ST_directed_out)[3:6] <- c("STcon", "Out closeness", "All closeness", "Betweenness")
 write.table(cbind(rbind(Sites_list[[1]],Sites_list[[2]],Sites_list[[3]],
                   Sites_list[[4]],Sites_list[[5]],Sites_list[[6]],Sites_list[[7]]),
                   NonW_ST_directed_out[,1:2],

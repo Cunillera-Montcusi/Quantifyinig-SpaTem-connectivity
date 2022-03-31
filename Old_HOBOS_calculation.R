@@ -71,11 +71,3 @@ Old_HOBOS_comb <- data.frame("ID"=HOB_riv_ID,"DtoU"=ups_dos,
                              mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 
 Old_HOBOS_comb
-
-
-# We upload the used dataset (original Fric, Fdis and FR)
-data <- read.csv("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/1. David Pineda HYDR/Models NULS/VARIABLES.csv", sep=";")
-
-
-
-

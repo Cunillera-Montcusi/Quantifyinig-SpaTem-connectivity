@@ -331,9 +331,9 @@ Old_HOBOS_comb
 
 # Printing image for a PCA with all the variables together 
 for (a in 1:length(four_approxim)) {
-  png(filename =paste("Figure/Data_treat/","PCAs ST ind. data vs TOT",".png"), 
-      width = 700*4, height = 600*4, 
-      units = "px",res = 300)
+png(filename =paste("Figure/Data_treat/","PCAs ST ind. data vs TOT",".png"), 
+    width = 700*4, height = 600*4, 
+    units = "px",res = 300)
 grid.arrange(
 autoplot(prcomp(
          data.frame(NonW_ST_directed_out[,2:6],Old_HOBOS_comb[,3:5]),

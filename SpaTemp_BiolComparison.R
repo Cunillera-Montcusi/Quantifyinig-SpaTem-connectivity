@@ -156,7 +156,7 @@ table_shannon <- by_group_data_season%>%
                  spread(key =Species,value = Abund, fill=0)%>%
                  bind_cols("Riera"=BDD_activ$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
+shan <- vegan::diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES active ________________________________________________________________________####
 
@@ -220,7 +220,7 @@ table_shannon <- by_group_data_season%>%
   spread(key =Species,value = Abund, fill=0)%>%
   bind_cols("Riera"=BDD_pass$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
+shan <- vegan::diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES passive ________________________________________________________________________####
 
@@ -460,7 +460,8 @@ for (variable in 1:ncol(variable_y_temp)) {
 plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=log(variable_y+1),fill=ID,colour=ID))+
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
     geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-    geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+    geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+    #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_manual(values =  CunilleraPAL_corrected)+
     scale_color_manual(values =  CunilleraPAL_corrected)+
     xlab(paste("log(STcon)"))+
@@ -546,7 +547,8 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
     plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=log(variable_y+1),fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STcon)"))+
@@ -633,7 +635,8 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
     plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=log(variable_y+1),fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STcon)"))+
@@ -736,7 +739,8 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
     plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STconmat)"))+
@@ -816,7 +820,8 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
     plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
+      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
       xlab(paste("log(STconmat)"))+
