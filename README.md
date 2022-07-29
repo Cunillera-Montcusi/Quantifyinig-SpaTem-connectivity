@@ -1,5 +1,7 @@
 # Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case
 
+David Cunillera-Montcusí, José María Fernández-Calero, Sebastian Pölsterl, Júlia Valera, Roger Argelich, Pau Fortuño, Núria Cid, Núria Bonada, Miguel Cañedo-Argüelles
+
 More information in: https://cunillera-montcusi.github.io/Quantifyinig-SpaTem-connectivity/
 
 1. The growing interest of spatiotemporal patterns in nature has been fostered by the current availability of high frequency tools. However, we still lack a methodological framework to process and interpret spatiotemporal datasets into meaningful values, adaptable to different time-windows and/or responding to different spatial structures. Here we developed and tested a framework to evaluate how communities are connected spatiotemporally by generating the Spatiotemporal connectivity (STcon) and the Spatiotemporal connectivity matrix (STconmat) measures.
