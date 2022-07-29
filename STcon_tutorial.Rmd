@@ -1,8 +1,8 @@
 ---
-title: "Quantifying spatiotemporal connectivity: a methodological approach based on high frequency monitoring of surface water from river networks"
-author: "David Cunillera-Montcusí, José María Fernández-Calero, Sebastian Pölsterl, Júlia Valera, Roger Argelich, Núria Bonada, Miguel Cañedo-Argüelles"
+title: "Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case"
+author: "David Cunillera-Montcusí, José María Fernández-Calero, Sebastian Pölsterl, Júlia Valera, Roger Argelich, Pau Fortuño, Núria Cid, Núria Bonada, Miguel Cañedo-Argüelles"
 subtitle: "Journal - DOI: "
-date: "Submitted - "
+date: "Submitted - 03/08/2022"
 output: rmdformats::downcute
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
