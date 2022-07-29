@@ -1,4 +1,4 @@
-# MECODISPER_SpaTem
+# Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case
 
 More information in: https://cunillera-montcusi.github.io/Quantifyinig-SpaTem-connectivity/
 
