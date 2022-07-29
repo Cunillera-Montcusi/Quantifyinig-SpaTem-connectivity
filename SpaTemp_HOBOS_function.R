@@ -9,19 +9,17 @@
 #calculate these indices based on high-frequency (or frequency-based) information obtained from natural ecosystems. 
 
 # The current script as well as all the information contained in it and its tutorial are part of the article titled: 
-#Quantifying spatiotemporal connectivity: a methodological approach based on high frequency monitoring of surface water from river networks.
-#Authors: 
-# David Cunillera-Montcusí ^1*,
-# José María Fernández-Calero ^1, 
-# Sebastian Pölsterl ^2, 
-# Júlia Valera ^1, 
-# Roger Argelich ^1
-# Núria Bonada ^1 
-# Miguel Cañedo-Argüelles ^3
-
-#1- FEHM-Lab (Freshwater Ecology, Hydrology and Management), Departament de Biologia Evolutiva, Ecologia i Ciències Ambientals, Facultat de Biologia, Institut de Recerca de la Biodiversitat (IRBio), Universitat de Barcelona (UB), Diagonal 643, 08028 Barcelona, Catalonia, Spain.
-#2- The Lab for Artificial Intelligence in Medical Imaging (AI-Med), Department of Child and Adolescent Psychiatry, Ludwig-Maximilians-Universität, Waltherstraße 23, 80337 Munich, Germany
-#3- FEHM -Lab (Freshwater Ecology, Hydrology and Management), Departament de Biologia Evolutiva, Ecologia i Ciències Ambientals, Facultat de Biologia, Institut de Recerca de l'Aigua (IdRA), Universitat de Barcelona (UB), Diagonal 643, 08028 Barcelona, Catalonia, Spain.
+#Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case.
+#David Cunillera-Montcusí1,2,3,4*, José María Fernández-Calero1,2, Sebastian Pölsterl5, Júlia Valera1, Roger Argelich1, Núria Cid1,6, Núria Bonada1,2, Miguel Cañedo-Argüelles1,7,8
+#1- FEHM-Lab (Freshwater Ecology, Hydrology and Management), Departament de Biologia Evolutiva, Ecologia i Ciències Ambientals, Facultat de Biologia,Universitat de Barcelona (UB), Diagonal 643, 08028 Barcelona, Spain.
+#2-  Institut de Recerca de la Biodiversitat (IRBio), Universitat de Barcelona (UB), Diagonal 643, 08028 Barcelona, Spain.
+#3. Departamento de Ecología y Gestión Ambiental, Centro Universitario Regional del Este (CURE), Universidad de la República, Tacuarembó s/n, Maldonado, Uruguay.
+#4. GRECO, Institute of Aquatic Ecology, University of Girona, Girona, Spain
+#5- The Lab for Artificial Intelligence in Medical Imaging (AI-Med), Department of Child and Adolescent Psychiatry, Ludwig-Maximilians-Universität, Waltherstraße 23, 80337 Munich, Germany
+#6- IRTA  Marine and Continental Waters Programme, Ctra de Poble Nou Km 5.5, E43540, La Ràpita, Catalonia, Spain 
+#7- Institut de Recerca de l'Aigua (IdRA), Universitat de Barcelona (UB), Diagonal 643, 08028 Barcelona, Catalonia, Spain.
+#8- Institute of Environmental Assessment and Water Research (IDAEA-CSIC), Carrer de Jordi Girona, 18-26, 08034 Barcelona
+#*Corresponding author: david.cunillera@dcm.cat
 
 # The script and the follwouing functions have been written by David Cunillera-Montcusí. For any question, comment or 
 #feedback contact him at: david.cunillera@dcm.cat 
@@ -53,9 +51,9 @@
 #)
 
 # This information is KEY to preserve the structure and functioning of the function. The system does not necessarily need to quantify 
-#water absence/presence but each cell value must represent a feature defining connectivity "on" or "off" and that van be transmitted 
-#to built ecologically meaninful links in a spatiotemporal graph. 
-# The meaning of an "yes" (Input matrix value= 1) or a "no" (Input matrix value= 0) can be later modified by the values assigned to  
+#water absence/presence but each cell value must represent a feature defining connectivity "on" or "off" and that can be transmitted 
+#to built ecologically meaningful links in a spatiotemporal graph. 
+# The meaning of a "yes" (Input matrix value= 1) or a "no" (Input matrix value= 0) can be later modified by the values assigned to  
 # the "LINK" (spatial and temporal) within the figure. 
 
 # direction either "directed" or "undirected" --> Undirected considers that all neighbours are equally reachable. 
@@ -71,6 +69,9 @@
 # - value_NO_S_LINK for spatial links
 # - value_NO_T_LINK for temporal links
 
+# WARNING ! All values must be entered in a list format, even if only 1 matrix is used. This is done in order to allow the possibility 
+# to enter several streams in one call and obtain the results according to that.   
+
 spat_temp_index <- function(HOBOS_dataset, 
                             Sites_coordinates,
                             direction, 
@@ -84,35 +85,12 @@ spat_temp_index <- function(HOBOS_dataset,
                             print.plots=TRUE,
                             print.directory){
   
-  require(maps)
-  require(mapdata) 
-  require(maptools)
-  require(mapproj)
-  require(rgdal)
-  require(ggmap)
-  require(leaflet)
-  require(tigris)
-  require(sp)
-  require(ggplot2)
-  require(plyr)
-  require(animation)
-  require(gridExtra)
-  require(psych)
-  require(rstudioapi)
-  require(data.table)
-  require(sf)
-  require(geosphere) 
-  require(raster)
-  require(eyelinker)
-  require(PBSmapping)
-  require(igraph)
-  require(adehabitatHR)
-  require(rgeos)
-  require(shp2graph)
-  require(sna,quietly = T,warn.conflicts = F)
-  require(RANN)
-  require(tidyverse)
-  require(viridis)  
+  require(maps);require(mapdata); require(maptools);require(mapproj);require(rgdal);
+  require(ggmap);require(leaflet);require(tigris);require(sp);
+  require(ggplot2);require(plyr);require(animation);require(gridExtra);
+  require(psych);require(rstudioapi);require(data.table);require(sf);require(geosphere) ;require(raster);
+  require(eyelinker);require(PBSmapping);require(igraph);require(adehabitatHR);
+  require(rgeos);require(shp2graph);require(sna,quietly = T,warn.conflicts = F);require(RANN);require(tidyverse);require(viridis)
   
 if(print.plots==TRUE){
 ifelse(is.character(print.directory)==T,
@@ -161,9 +139,8 @@ Simple_river_network_maps[[river]] <- ggplot(n, layout=as.matrix(Sites_coordinat
 if(print.plots==TRUE){
   png(filename = paste(print.directory,"Simple_river_network_maps.png"),
       width = 715*6,height = 448*6,units = "px",res = 300)
-grid.arrange(Simple_river_network_maps[[1]],Simple_river_network_maps[[2]],Simple_river_network_maps[[3]],
-             Simple_river_network_maps[[4]],Simple_river_network_maps[[5]],Simple_river_network_maps[[6]],
-             Simple_river_network_maps[[7]], top="Simple river network")
+grid.arrange(arrangeGrob(grobs = Simple_river_network_maps,ncol=ceiling(length(HOBOS_dataset)/2)),
+               top="Simple river network")
 dev.off()}
 
 #_______________________________________________________________________
@@ -364,23 +341,16 @@ out_Matrix <- list(ST_matrix,ST_Oclosenness_matrix,ST_Allclosenness_matrix,ST_be
 out_Matrix_LIST[[river]] <- out_Matrix
 }
 
-
-ST_matrix_rivers <- list(out_Matrix_LIST[[1]][[1]],out_Matrix_LIST[[2]][[1]],out_Matrix_LIST[[3]][[1]],
-                         out_Matrix_LIST[[4]][[1]],out_Matrix_LIST[[5]][[1]],
-                         out_Matrix_LIST[[6]][[1]],out_Matrix_LIST[[7]][[1]])
+for (river in 1:length(HOBOS_dataset)) {
+  ST_matrix_rivers[[river]] <- out_Matrix_LIST[[river]][[1]]
+}
 
 if(Network_variables==T){
-ST_directed_Ocloseness_rivers <- list(out_Matrix_LIST[[1]][[2]],out_Matrix_LIST[[2]][[2]],out_Matrix_LIST[[3]][[2]],
-                                      out_Matrix_LIST[[4]][[2]],out_Matrix_LIST[[5]][[2]],
-                                      out_Matrix_LIST[[6]][[2]],out_Matrix_LIST[[7]][[2]])
-
-ST_directed_Allcloseness_rivers <- list(out_Matrix_LIST[[1]][[3]],out_Matrix_LIST[[2]][[3]],out_Matrix_LIST[[3]][[3]],
-                                        out_Matrix_LIST[[4]][[3]],out_Matrix_LIST[[5]][[3]],
-                                        out_Matrix_LIST[[6]][[3]],out_Matrix_LIST[[7]][[3]])
-
-ST_directed_betweennes_rivers <- list(out_Matrix_LIST[[1]][[4]],out_Matrix_LIST[[2]][[4]],out_Matrix_LIST[[3]][[4]],
-                                      out_Matrix_LIST[[4]][[4]],out_Matrix_LIST[[5]][[4]],
-                                      out_Matrix_LIST[[6]][[4]],out_Matrix_LIST[[7]][[4]])
+  for (river in 1:length(HOBOS_dataset)) {
+    ST_directed_Ocloseness_rivers[[river]] <- out_Matrix_LIST[[river]][[2]]
+    ST_directed_Allcloseness_rivers[[river]] <- out_Matrix_LIST[[river]][[3]]
+    ST_directed_betweennes_rivers[[river]] <- out_Matrix_LIST[[river]][[4]]
+  }
 }
 
 ####_______________________________________________________________________
@@ -452,9 +422,8 @@ for (river in 1:length(HOBOS_dataset)) {
 if(print.plots==TRUE){
 png(filename = paste(print.directory,"Dir_NonW_STconnectivityMATRIX.png"),
                        width = 715*6,height = 448*6,units = "px",res = 300)
-grid.arrange(ST_matrix_plots[[1]],ST_matrix_plots[[2]],ST_matrix_plots[[3]],
-             ST_matrix_plots[[4]],ST_matrix_plots[[5]],ST_matrix_plots[[6]],
-             ST_matrix_plots[[7]], top="ST Dir NonW connectivity Matrix")
+grid.arrange(arrangeGrob(grobs = ST_matrix_plots,ncol=ceiling(length(HOBOS_dataset)/2)),
+               top="ST Dir NonW connectivity Matrix")
 dev.off()}
 
 ####_______________________________________________________________________
@@ -514,9 +483,8 @@ for (river in 1:length(HOBOS_dataset)) {
 if(print.plots==TRUE){
 png(filename = paste(print.directory,"Dir_NonW_STconnectivity.png"),
               width = 715*6,height = 448*6,units = "px",res = 400)
-grid.arrange(ST_connectivity_plot[[1]],ST_connectivity_plot[[2]],ST_connectivity_plot[[3]],
-             ST_connectivity_plot[[4]],ST_connectivity_plot[[5]],ST_connectivity_plot[[6]],
-             ST_connectivity_plot[[7]], top="ST Dir NonW connectivity")
+grid.arrange(arrangeGrob(grobs = ST_connectivity_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+             top="ST Dir NonW connectivity")
 dev.off()}
   
 
@@ -552,9 +520,8 @@ for (river in 1:length(HOBOS_dataset)) {
 if(print.plots==TRUE){
 png(filename = paste(print.directory,"Dir_NonW_STOclosennes.png"),
                      width = 715*6,height = 448*6,units = "px",res = 400)
-grid.arrange(ST_Oclo_plot[[1]],ST_Oclo_plot[[2]],ST_Oclo_plot[[3]],
-             ST_Oclo_plot[[4]],ST_Oclo_plot[[5]],ST_Oclo_plot[[6]],
-             ST_Oclo_plot[[7]], top="ST Dir NonW Out closennes")
+grid.arrange(arrangeGrob(grobs = ST_Oclo_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+               top="ST Dir NonW Out closennes")
 dev.off()}
 
 
@@ -588,9 +555,8 @@ for (river in 1:length(HOBOS_dataset)) {
 if(print.plots==TRUE){
 png(filename = paste(print.directory,"Dir_NonW_STAllclosennes.png"),
                        width = 715*6,height = 448*6,units = "px",res = 400)
-grid.arrange(ST_Allclo_plot[[1]],ST_Allclo_plot[[2]],ST_Allclo_plot[[3]],
-             ST_Allclo_plot[[4]],ST_Allclo_plot[[5]],ST_Allclo_plot[[6]],
-             ST_Allclo_plot[[7]], top="ST Dir NonW All closennes")
+grid.arrange(arrangeGrob(grobs = ST_Allclo_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+             top="ST Dir NonW All closennes")
 dev.off()}
 
 
@@ -626,9 +592,8 @@ for (river in 1:length(HOBOS_dataset)) {
 if(print.plots==TRUE){
 png(filename = paste(print.directory,"Dir_NonW_STbetweenness.png"),
                        width = 715*6,height = 448*6,units = "px",res = 400)
-grid.arrange(ST_betw_plot[[1]],ST_betw_plot[[2]],ST_betw_plot[[3]],
-             ST_betw_plot[[4]],ST_betw_plot[[5]],ST_betw_plot[[6]],
-             ST_betw_plot[[7]], top="ST Dir NonW Betweenness")
+grid.arrange(arrangeGrob(grobs = ST_betw_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+             top="ST Dir NonW Betweenness")
 dev.off()}
 
 }
@@ -1010,7 +975,7 @@ out <- foreach(nodes=1:numn_nodes)%dopar%{
 #for (nodes in 1:numn_nodes) {
   spt_conn[nodes] <- sum(apply(ST_matrix,1,sum)[seq(nodes,numn_nodes*length(HOBOS_dataset[[river]]$Day)-numn_nodes,numn_nodes)])/leng_correct[nodes]
 }
-# We divide by the number of days so we obtain the "per day" values. max (((numn_nodes*2-1)*512)/position of the node)/513
+# We divide by the number of days so we obtain the "per day" values. max (((numn_nodes*2+1)*512)/position of the node)/513
 spt_conn <- unlist(out)
 spt_conn<- spt_conn/c(length(HOBOS_dataset[[river]]$Day))
 

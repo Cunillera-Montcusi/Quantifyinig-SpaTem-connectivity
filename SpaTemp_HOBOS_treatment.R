@@ -53,25 +53,6 @@ Sites_list
 # 2. Dates selection ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-# We upload the biological data just to see the Date of the interval that we want to capture 
-### Spring dataset - May 2019
-BDD <- read.csv2("BiolData/Matriz_primavera.csv", sep=";")
-date_correct_Spring <- min(unique(BDD$Date))
-# Edit the dates according the desired format to be entered in the following steps
-date_correct_Spring <- strsplit(date_correct_Spring,"/") # Split the numbers by the "/"
-date_correct_Spring <- paste(date_correct_Spring[[1]][3],"-", # Paste the numbers in the correct order and separated by "-" 
-                             date_correct_Spring[[1]][2],"-",
-                             date_correct_Spring[[1]][1],sep = "")
-
-### Summer dataset - July 2019
-BDD <- read.csv2("BiolData/Matriz_verano.csv", sep=";")
-date_correct_Summer <- min(unique(BDD$Date))
-# Edit the dates according the desired format to be entered in the following steps
-date_correct_Summer <- strsplit(date_correct_Summer,"/") # Split the numbers by the "/"
-date_correct_Summer <- paste(date_correct_Summer[[1]][3],"-", # Paste the numbers in the correct order and separated by "-" 
-                             date_correct_Summer[[1]][2],"-",
-                             date_correct_Summer[[1]][1],sep = "")
-
 ### Autumn dataset - November 2019
 BDD <- read.csv2("BiolData/Matriz_otoño.csv", sep=";")
 date_correct_Autumn <- min(unique(BDD$Date))
@@ -81,8 +62,6 @@ date_correct_Autumn <- paste(date_correct_Autumn[[1]][3],"-", # Paste the number
                              date_correct_Autumn[[1]][2],"-",
                              date_correct_Autumn[[1]][1],sep = "")
 
-date_correct_Spring
-date_correct_Summer
 date_correct_Autumn
 ## All hobos begun at the same date
 date_HOBOS <- "2018-07-26"
@@ -92,8 +71,12 @@ date_HOBOS_end <- "2019-12-20"
 
 #Beginning
 bd <- as.Date(date_HOBOS)
+
 #End
+# We change the end for the total dataset (513 days) or for comparing only with Autumn
 ed <- as.Date(date_HOBOS_end)
+#ed <- as.Date(date_correct_Autumn)
+
 
 # Difference in number of days will correspond to the number of rows to be selected. 
 time_window_beg <- as.numeric(difftime(bd+1, date_HOBOS, units = "days")) 
@@ -106,7 +89,7 @@ for (site in 1:length(HOBOS_sites)) {
 }
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 3. Distance matric creation ####
+# 3. Distance matrix creation ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # Must be a list of distances matrix for each river. 
@@ -207,7 +190,6 @@ for (river in 1:length(NonW_ST_directed_Ocloseness_rivers)) {
   NonW_ST_directed_Oclo_sd[[river]] <- apply(NonW_ST_directed_Ocloseness_rivers[[river]],2,sd)
 }
 
-#NonW_ST_oclo_plot
 # Spatiotemporal ALL.closenness 
 NonW_ST_directed_Allcloseness_rivers <- Dir_NonW_Net$Dir_NonW_ST_Acl
 NonW_ST_directed_Allclo_mean <- list()
@@ -217,7 +199,6 @@ for (river in 1:length(NonW_ST_directed_Allcloseness_rivers)) {
   NonW_ST_directed_Allclo_sd[[river]] <- apply(NonW_ST_directed_Allcloseness_rivers[[river]],2,sd)
 }
 
-#NonW_ST_Allclo_plot
 # Spatiotemporal Betweenness 
 NonW_ST_directed_betweennes_rivers <- Dir_NonW_Net$Dir_NonW_ST_Bet
 NonW_ST_directed_betw_mean <- list()

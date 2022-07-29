@@ -28,7 +28,7 @@ detach("package:plyr", unload = TRUE)
 
 # SUGGESTED ORDER TO RUN the scripts: 
 ### 1 SpaTemp_HOBOS_treatment.R
-### 2 Old_HOBOS_calculation.R
+### 2 FlowIntermittence_indices.R
 ### 3 SpaTemp_comparison.R
 ### 4 SpaTemp_Biolcomparison.R
 
@@ -39,34 +39,6 @@ setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. M
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 1. BIOLOGICAL Data uploading ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
-# IMPORTANT MESSAGE: Depending on which season you want to analye, you run different lines
-
-# Spring dataset - May 2019
-BDD <- read.csv2("BiolData/Matriz_primavera.csv", sep=";")
-BDD <- mutate(BDD, 
-                Riera = case_when(
-                  str_detect(Code,"CA") ~ "C", 
-                  str_detect(Code,"H") ~ "VH",
-                  str_detect(Code,"MU") ~ "M",
-                  str_detect(Code,"R") ~ "R",
-                  str_detect(Code,"SA") ~ "SA",
-                  str_detect(Code,"SC") ~ "SC",
-                  str_detect(Code,"T") ~ "T",
-                  TRUE ~ "ERROR" ))         
-
-# Summer dataset - July 2019
-BDD <- read.csv2("BiolData/Matriz_verano.csv", sep=";")
-BDD <- mutate(BDD, 
-              Riera = case_when(
-                str_detect(Code,"CA") ~ "C", 
-                str_detect(Code,"H") ~ "VH",
-                str_detect(Code,"MU") ~ "M",
-                str_detect(Code,"R") ~ "R",
-                str_detect(Code,"SA") ~ "SA",
-                str_detect(Code,"SC") ~ "SC",
-                str_detect(Code,"T") ~ "T",
-                TRUE ~ "ERROR" ))         
 
 # Autumn dataset - November 2019
 BDD <- read.csv2("BiolData/Matriz_otoño.csv", sep=";")
@@ -83,7 +55,6 @@ BDD <- mutate(BDD,
                 str_detect(Code,"SC") ~ "SC",
                 str_detect(Code,"T") ~ "T",
                 TRUE ~ "ERROR" )) 
-
 
 
 Traits_val <- read.csv2("BiolData/traits.csv", row.names = 1)
@@ -858,89 +829,3 @@ grid.arrange(
 dev.off()
 plots_HOB_BDD_total[[5]] <- plots_HOB_BDD
 
-
-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 6. FINAL RESULTS TABLES ####
-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
-#### test chunk ####
-#
-#plots_HOB_BDD <- list()
-#plots_HOB_BDD_ID_plot <- list()
-#for (col_var in 1:ncol(HOB_BDD_match%>%select(-Riera, -Codi_HOBO,
-#                                              -Latitud,-Longitud,
-#                                              -ID, -DtoU,-ID_UpDo,-TotDur,-TotNum,-TotLeng,
-#                                              -Samp_ID, -rich, -shan))){
-#  ID_names <- unique(HOB_BDD_match$ID)
-#  for (name_ID in 1:length(ID_names)) {
-#    variable_x <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(-Riera, -Codi_HOBO,
-#                                                                         -Latitud,-Longitud,
-#                                                                         -ID, -DtoU,-ID_UpDo,-TotDur,-TotNum,-TotLeng,
-#                                                                         -Samp_ID, -rich, -shan)
-#    variable_x_name <- colnames(variable_x)[col_var]
-#    variable_x <- variable_x[,col_var]
-#    
-#    variable_y <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(rich)
-#    variable_y_model <- unlist(variable_y)
-#    
-#    factors <- HOB_BDD_match%>%filter(ID==ID_names[name_ID])%>%select(ID, DtoU,ID_UpDo)
-#    Id_random <- unlist(factors$ID)
-#    
-#    model <- lm(log(variable_y_model+1)~log(variable_x+1))
-#    if(is.na(model$coefficients[2])==TRUE){
-#      results <- paste("-","-","-")
-#    }else{
-#      results <- round(as.numeric(c(summary(model)[[4]][,1], summary(model)[[4]][2,4])),2)
-#    }
-#    
-#    col_fill <- CUNILLERA_pal("LGTBI")(length(ID_names))
-#    
-#    dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-#    #dataset$pred_values <- predict(model)
-#    plots_HOB_BDD_ID_plot[[name_ID]]<- ggplot(dataset,aes(x=log(X_var+1), y=log(rich+1)))+
-#      geom_point(color="grey30", alpha=0.5, shape=21, size=2,fill=col_fill[name_ID])+
-#      geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, 
-#                  linetype=2, fill=col_fill[name_ID])+
-#      geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-#      xlab(paste("log(STcon)"))+
-#      ylab(paste("log(richness)"))+
-#      labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-#      labs(title=paste(names_scenarios[col_var],"vs","richness"))+
-#      theme_classic()+
-#      theme(legend.position="none")
-#  }
-#  plots_HOB_BDD[[col_var]] <- plots_HOB_BDD_ID_plot
-#}
-#
-#legend_plots<- get_legend(ggplot(dataset)+
-#                            geom_point(aes(x=X_var,y=rich,fill=ID),shape=21, size=6)+
-#                            scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
-#                            theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical"))
-#
-#
-#png(filename ="Figure/Biol_treat/Richness.png", 
-#    width = 1000*4, height = 1000*4, 
-#    units = "px",res = 300) 
-#grid.arrange(
-#  arrangeGrob(
-#    plots_HOB_BDD[[1]][[1]],plots_HOB_BDD[[1]][[2]],plots_HOB_BDD[[1]][[3]],
-#    plots_HOB_BDD[[1]][[4]],plots_HOB_BDD[[1]][[5]],plots_HOB_BDD[[1]][[6]], 
-#    nrow=1,ncol=6),
-#  
-#  arrangeGrob(
-#    plots_HOB_BDD[[2]][[1]],plots_HOB_BDD[[2]][[2]],plots_HOB_BDD[[2]][[3]],
-#    plots_HOB_BDD[[2]][[4]],plots_HOB_BDD[[2]][[5]],plots_HOB_BDD[[2]][[6]],
-#    nrow=1,ncol=6),
-#  
-#  arrangeGrob(
-#    plots_HOB_BDD[[3]][[1]],plots_HOB_BDD[[3]][[2]],plots_HOB_BDD[[3]][[3]],
-#    plots_HOB_BDD[[3]][[4]],plots_HOB_BDD[[3]][[5]],plots_HOB_BDD[[3]][[6]],
-#    nrow=1,ncol=6),
-#  
-#  arrangeGrob(
-#    plots_HOB_BDD[[4]][[1]],plots_HOB_BDD[[4]][[2]],plots_HOB_BDD[[4]][[3]],
-#    plots_HOB_BDD[[4]][[4]],plots_HOB_BDD[[4]][[5]],plots_HOB_BDD[[4]][[6]],    
-#    nrow=1,ncol=6),
-#  arrangeGrob(legend_plots),
-#  nrow=5,ncol=1)
-#dev.off()

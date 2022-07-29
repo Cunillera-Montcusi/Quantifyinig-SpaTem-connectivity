@@ -326,7 +326,7 @@ dev.off()
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 3. Comparing and Calculating OLD HOBOS values ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-source("Old_HOBOS_calculation.R")
+source("FlowIntermittence_indices.R")
 Old_HOBOS_comb
 
 # Printing image for a PCA with all the variables together 
