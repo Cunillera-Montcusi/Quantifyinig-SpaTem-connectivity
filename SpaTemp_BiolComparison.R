@@ -259,7 +259,7 @@ HOB_riv_ID<- Stream_order$ï..Riera
 ups_dos <- Stream_order$UtoD
 
 # Calculation of OLD HOBOS values to include them in the comparisons. 
-source("Old_HOBOS_calculation.R")
+source("FlowIntermittence_indices.R")
 Old_HOBOS_comb
 
 # 3.3 Geographical matching ####

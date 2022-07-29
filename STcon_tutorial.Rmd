@@ -17,20 +17,20 @@ knitr::opts_chunk$set(echo = T,
 ```
 # **Script introduction**
 
-Find in the following lines the code corresponding to the analysis of the article: Quantifying spatiotemporal connectivity: a methodological approach based on high frequency monitoring of surface water from river networks. 
+Find in the following lines the code corresponding to the analysis of the article: Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case. 
 
 All the suplementary material images, original scripts and used functions can be found in:
 
 Article DOI: 
 
-Direct link: https://github.com/Cunillera-Montcusi/
+Direct link: https://github.com/Cunillera-Montcusi/Quantifyinig-SpaTem-connectivity
 
 To properly follow the following steps we recommend to read Methods section of the article: 
 
 ## *The script of the function spat_temp_index can be found in the following repository and supplementary material*
 
-Link to the functions spat_temp_index:
-Link to supplementary material:
+Link to the functions spat_temp_index: https://github.com/Cunillera-Montcusi/Quantifyinig-SpaTem-connectivity
+Link to supplementary material: 
 
 
 ```{r packages , eval=FALSE}
@@ -153,7 +153,7 @@ for (site in 1:length(HOBOS_sites)) {
 }
 ```
 
-### 3. Distance matric creation
+### 3. Distance matrix creation
 
 Finally, if we wish to calculate weighted indices we have to create a weighted pairwise matrix with the desired distance. In our case we caluclate the euclidean distances based on the longitude and latitude. We use the coordinates information contained in "Sites_list" object. 
 
@@ -541,7 +541,7 @@ We calculate a different set of metrics that where previously used for this type
 The script to calculate these metrics can be found in the "Old_HOBOS_calculation.R" file found in the following repository - LINK  
 
 ```{r Old HOBOS, eval=FALSE}
-source("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem/Old_HOBOS_calculation.R")
+source("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem/FlowIntermittence_indices.R")
 Old_HOBOS_comb
 
 ```
@@ -864,13 +864,17 @@ Find all the output results in the following repository (LINK) and the Supplemen
 
 # SUGGESTED ORDER TO RUN the scripts: 
 ### 1 SpaTemp_HOBOS_treatment.R
-### 2 Old_HOBOS_calculation.R
+### 2 FlowIntermittence_indices.R
 ### 3 SpaTemp_comparison.R
 ### 4 SpaTemp_Biolcomparison.R
 
-# Cunillera_palette - Available at https://github.com/Cunillera-Montcusi/Cunillera_Pallete
+# Nice colors? CUNILLERA_palette is what you need
 source("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/CUNILLERA_palette.R")
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
+
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# 1. BIOLOGICAL Data uploading ####
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # Autumn dataset - November 2019
 BDD <- read.csv2("BiolData/Matriz_otoño.csv", sep=";")
@@ -888,10 +892,11 @@ BDD <- mutate(BDD,
                 str_detect(Code,"T") ~ "T",
                 TRUE ~ "ERROR" )) 
 
+
 Traits_val <- read.csv2("BiolData/traits.csv", row.names = 1)
 bloc<-read.table("BiolData/trait.blocks.txt",h=T)
 
-# TRAITS implementation based on rel. abundances of each trait ####
+# 1.1 TRAITS implementation based on rel. abundances of each trait ####
 # Filter species that are present or not present existing 
 out <- c()
 for (i in 1:length(rownames(Traits_val))) {
@@ -912,7 +917,7 @@ Trait_abundances<-as.matrix(BDD_croped)%*%as.matrix(Trait_matr_prep)
 Trait_abund_f4 <- data.frame("Code"=BDD$Code,"Date"=BDD$Date,"Riera"=BDD$Riera, "f4"=as.data.frame(Trait_abundances)$f4)
 Trait_abund_f1 <- data.frame("Code"=BDD$Code,"Date"=BDD$Date,"Riera"=BDD$Riera, "f1"=as.data.frame(Trait_abundances)$f1)
 
-# TRAITS by filtering ####
+# 1.2 TRAITS by filtering ####
 # Traits addition by  filtering only species corresponding to the traits
 Traits_val_edited <- data.frame("taxon"=row.names(Traits_val),Traits_val)
 
@@ -925,10 +930,12 @@ BDD_activ <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
 Trait_disp <- Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==3)%>%
   rows_insert(Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==2))
 BDD_pass <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
+
 ```
 
 ### Active dispersers community metrics calculated 
 ```{r Active dispersers, eval=FALSE}
+# 2.1 Active dispersers ####
 Data_season <- BDD_activ %>%
                 dplyr::select(-Date,-Riera)%>%
                 pivot_longer(-Code)
@@ -955,7 +962,7 @@ table_shannon <- by_group_data_season%>%
                  spread(key =Species,value = Abund, fill=0)%>%
                  bind_cols("Riera"=BDD_activ$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
+shan <- vegan::diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES active ________________________________________________________________________####
 
@@ -1021,9 +1028,10 @@ table_shannon <- by_group_data_season%>%
   spread(key =Species,value = Abund, fill=0)%>%
   bind_cols("Riera"=BDD_pass$Riera)
 
-shan <- diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
+shan <- vegan::diversity(table_shannon%>%ungroup()%>%dplyr::select(-Code,-Riera),index = "shannon")
 
 #SIMMILARITIES passive ________________________________________________________________________####
+
 table_shannon_PA <- by_group_data_season%>%
   mutate(PA=ifelse(Abund>0,1,0))%>%
   dplyr::select(-Abund)%>%
@@ -1058,6 +1066,15 @@ BID_output_DIST_pas <- list(Bray.distance,Jac.distance)
 
 ```
 
+### Merging all community metrics calculated 
+```{r Mergin BID values, eval=FALSE}
+# BID values total
+BID_output_IND <- left_join(BID_output_IND_act, BID_output_IND_pas, by="Code")
+
+BID_output_DIST <- list("Active"=BID_output_DIST_act,"Passive"=BID_output_DIST_pas)
+
+```
+
 ### Charging geographic and matching biological samples and data logger localization 
 ```{r CHARGING_MATCHING, eval=FALSE}
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -1085,7 +1102,7 @@ HOB_riv_ID<- Stream_order$ï..Riera
 ups_dos <- Stream_order$UtoD
 
 # Calculation of OLD HOBOS values to include them in the comparisons. 
-source("Old_HOBOS_calculation.R")
+source("FlowIntermittence_indices.R")
 Old_HOBOS_comb
 
 # Geographical matching ####
