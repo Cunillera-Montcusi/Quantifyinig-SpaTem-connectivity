@@ -74,7 +74,7 @@ bd <- as.Date(date_HOBOS)
 
 #End
 # We change the end for the total dataset (513 days) or for comparing only with Autumn
-ed <- as.Date(date_HOBOS_end)
+ed <- as.Date(date_correct_Autumn)
 #ed <- as.Date(date_correct_Autumn)
 
 
