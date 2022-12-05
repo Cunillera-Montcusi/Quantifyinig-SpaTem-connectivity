@@ -1,4 +1,6 @@
-# MECODISPER_SpaTem
+# Navigating through space and time: a methodological approach to quantify spatiotemporal connectivity using flow intermittence data as a study case
+
+David Cunillera-Montcusí, José María Fernández-Calero, Sebastian Pölsterl, Júlia Valera, Roger Argelich, Pau Fortuño, Núria Cid, Núria Bonada, Miguel Cañedo-Argüelles
 
 More information in: https://cunillera-montcusi.github.io/Quantifyinig-SpaTem-connectivity/
 
