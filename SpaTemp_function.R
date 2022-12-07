@@ -161,10 +161,10 @@ spat_temp_index <- function(Inermitence_dataset,
   }
   ####_______________________________________________________________________
   if(print.plots==TRUE){
-    png(filename = paste(print.directory,"Simple_river_network_maps.png"),
+    png(filename = paste(print.directory,"River_network_map.png"),
         width = 715*6,height = 448*6,units = "px",res = 300)
     grid.arrange(arrangeGrob(grobs = Simple_river_network_maps,ncol=ceiling(length(Inermitence_dataset)/2)),
-                 top="Simple river network")
+                 top="River network map")
     dev.off()}
   
   ####_______________________________________________________________________
@@ -507,7 +507,7 @@ spat_temp_index <- function(Inermitence_dataset,
     png(filename = paste(print.directory,"STconmat.png"),
         width = 715*6,height = 448*6,units = "px",res = 300)
     grid.arrange(arrangeGrob(grobs = ST_matrix_plots,ncol=ceiling(length(Inermitence_dataset)/2)),
-                 top="ST Dir NonW connectivity Matrix")
+                 top="STconmat")
     dev.off()}
   
   ####_______________________________________________________________________
@@ -567,7 +567,7 @@ spat_temp_index <- function(Inermitence_dataset,
     png(filename = paste(print.directory,"STcon.png"),
         width = 715*6,height = 448*6,units = "px",res = 400)
     grid.arrange(arrangeGrob(grobs = ST_connectivity_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
-                 top="ST Dir NonW connectivity")
+                 top="STcon")
     dev.off()}
   
   if(Network_variables==T){
@@ -603,7 +603,7 @@ spat_temp_index <- function(Inermitence_dataset,
       png(filename = paste(print.directory,"SToutclosennes.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
       grid.arrange(arrangeGrob(grobs = ST_Oclo_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
-                   top="ST Dir NonW Out closennes")
+                   top="ST Out closennes")
       dev.off()}
     
     
@@ -638,7 +638,7 @@ spat_temp_index <- function(Inermitence_dataset,
       png(filename = paste(print.directory,"STclosennes.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
       grid.arrange(arrangeGrob(grobs = ST_Allclo_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
-                   top="ST Dir NonW All closennes")
+                   top="ST All closennes")
       dev.off()}
     
     
@@ -675,7 +675,7 @@ spat_temp_index <- function(Inermitence_dataset,
       png(filename = paste(print.directory,"STbetweenness.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
       grid.arrange(arrangeGrob(grobs = ST_betw_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
-                   top="ST Dir NonW Betweenness")
+                   top="ST Betweenness")
       dev.off()}
     
   }
