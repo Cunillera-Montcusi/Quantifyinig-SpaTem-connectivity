@@ -35,7 +35,7 @@
 #The function is thought for streams/rivers which have a stron directional pattern (Upstream to downstream). Therefore, the table provided
 #must respect this directionality as well as the required format to let the method work properly. 
 
-# See below, an example of the type of matrix that must be entered in the function as HOBOS_dataset
+# See below, an example of the type of matrix that must be entered in the function as Inermitence_dataset
 
 #data.frame(
 #MonitoredDays= c("Day1","Day2","Day3","Day4"), # An identifier for the monitored days from ORDERED from the "oldest" to the "newest"
@@ -73,18 +73,22 @@
 # WARNING ! All values must be entered in a list format, even if only 1 matrix is used. This is done in order to allow the possibility 
 # to enter several streams in one call and obtain the results according to that.   
 
-spat_temp_index <- function(HOBOS_dataset, 
+spat_temp_index <- function(Inermitence_dataset, 
                             Sites_coordinates,
                             direction,
-                            sense,
-                            weighting,
+                            sense="out",
+                            weighting=FALSE,
                             Network_stru,
                             dist_matrices,
+                            weighting_links=FALSE,
+                            link_weights,
                             value_S_LINK=1,
                             value_T_LINK=1,
                             value_NO_S_link=0,
                             value_NO_T_link=0,
-                            Network_variables=TRUE,
+                            legacy_effect,
+                            legacy_lenght,
+                            Network_variables=FALSE,
                             print.plots=TRUE,
                             print.directory){
   
@@ -106,19 +110,34 @@ spat_temp_index <- function(HOBOS_dataset,
     cat("Your river will be considered as an undirected graph","\n")}
   
   # We select the corresponding distance matrix
+  if(weighting_links==T){
+    cat("Your links will be weighted with daily data entered in the 'link_weights'","\n")
+    if(nrow(link_weights[[1]])!=nrow(Inermitence_dataset[[1]]) & ncol(link_weights[[1]])!=ncol(Inermitence_dataset[[1]])){
+      return(cat("Intermitence dataset and link_weights must have the same dimensions!","\n"))}
+    }
+  if(weighting_links==F){cat("Your links will be normal, as defined in the LINK/NO_LINK","\n")}
+  
+  # We select the corresponding distance matrix
   if(weighting==T){cat("Your connectivity will be Weighted, connections will be multiplied by 'dist_matrices'","\n")}
   if(weighting==F){cat("Your connectivity will be NON weighted, connections will not be multiplied by any distance matrix","\n")}
+  
+  if(legacy_lenght!=length(legacy_effect)){
+    return(cat("The length of your legacy effects is", length(legacy_effect), "and your legacy length is", legacy_lenght,"! They must be the same!", "\n"))}
+  
+  if(length(which(c(is.list(Inermitence_dataset),is.list(Sites_coordinates),is.list(Network_stru))==F))>0){
+    return(cat("Your Inermitence_dataset,Sites_coordinates or Network_stru must be list objects", "\n"))}
+  if(weighting==T & is.list(dist_matrices)==F){return(cat("Your distance matrix must be a list object"))}
   
   # Simple river network________________####
   # Building river networks based on just directional network.
   Simple_river_network <- list()
   Simple_river_network_maps <- list()
-  for (river in 1:length(HOBOS_dataset)) {
-    ST_matrix_out <- matrix(nrow = ncol(HOBOS_dataset[[river]])-1,ncol = ncol(HOBOS_dataset[[river]])-1, data=0)
-    spa_connections <-seq(1,ncol(HOBOS_dataset[[river]])-1,1)
-    time_step_1 <- rep(1,ncol(HOBOS_dataset[[river]])-1)
+  for (river in 1:length(Inermitence_dataset)) {
+    ST_matrix_out <- matrix(nrow = ncol(Inermitence_dataset[[river]])-1,ncol = ncol(Inermitence_dataset[[river]])-1, data=0)
+    spa_connections <-seq(1,ncol(Inermitence_dataset[[river]])-1,1)
+    time_step_1 <- rep(1,ncol(Inermitence_dataset[[river]])-1)
     
-    for (site_step in 1:c(ncol(HOBOS_dataset[[river]])-1)) {
+    for (site_step in 1:c(ncol(Inermitence_dataset[[river]])-1)) {
       #Simple spatial links _______________________
       if(time_step_1[site_step]==1){
         ST_matrix_out[spa_connections[site_step],which(Network_stru[[river]][site_step,]==1)] <- 1
@@ -144,7 +163,7 @@ spat_temp_index <- function(HOBOS_dataset,
   if(print.plots==TRUE){
     png(filename = paste(print.directory,"Simple_river_network_maps.png"),
         width = 715*6,height = 448*6,units = "px",res = 300)
-    grid.arrange(arrangeGrob(grobs = Simple_river_network_maps,ncol=ceiling(length(HOBOS_dataset)/2)),
+    grid.arrange(arrangeGrob(grobs = Simple_river_network_maps,ncol=ceiling(length(Inermitence_dataset)/2)),
                  top="Simple river network")
     dev.off()}
   
@@ -169,10 +188,10 @@ spat_temp_index <- function(HOBOS_dataset,
   pack_check <- search()
   pack_check_val <- length(which(pack_check=="package:sna"))
   if(pack_check_val>0){detach("package:sna", unload = TRUE)}
-  out_Matrix_LIST <- foreach(river=1:length(HOBOS_dataset))%dopar%{
-    #for (river in 1:length(HOBOS_dataset)) { - With this it takes 6'26''
+  out_Matrix_LIST <- foreach(river=1:length(Inermitence_dataset))%dopar%{
+  #for (river in 1:length(Inermitence_dataset)) { #- With this it takes 6'26''
     # We calculate the number of nodes of our network (used along the function)  
-    numn_nodes <- ncol(HOBOS_dataset[[river]])-1
+    numn_nodes <- ncol(Inermitence_dataset[[river]])-1
     
     if(weighting==TRUE){dist_matr <- dist_matrices[[river]]}
     
@@ -181,26 +200,27 @@ spat_temp_index <- function(HOBOS_dataset,
     ST_matrix <- matrix(nrow = numn_nodes,ncol = numn_nodes*2, data=0)
     ST_matrix_netwGraph <- matrix(nrow = numn_nodes,ncol = numn_nodes, data=0)
     
-    ST_Oclosenness_matrix <- matrix(length(HOBOS_dataset[[river]][,1]),
+    ST_Oclosenness_matrix <- matrix(length(Inermitence_dataset[[river]][,1]),
                                     numn_nodes, data=0)
-    ST_Allclosenness_matrix <- matrix(length(HOBOS_dataset[[river]][,1]),
+    ST_Allclosenness_matrix <- matrix(length(Inermitence_dataset[[river]][,1]),
                                       numn_nodes, data=0)
-    ST_betweennes_matrix <- matrix(length(HOBOS_dataset[[river]][,1]),
+    ST_betweennes_matrix <- matrix(length(Inermitence_dataset[[river]][,1]),
                                    numn_nodes, data=0)
     
     # Once created the template we start to fill it for every day
     ### We fill it for Days (or time)-1 because the last day does not have a "future" from which to extract values. 
-    for (days in 1:c(length(HOBOS_dataset[[river]][,1])-1)) {
-      print(paste("We are at time unit", days, "of", (length(HOBOS_dataset[[river]][,1])-1)))
+    for (days in 1:c(length(Inermitence_dataset[[river]][,1])-1)) {
+      cat("We are at time unit", days, "of", (length(Inermitence_dataset[[river]][,1])-1), "and at river", river,"\n")
       # First we define the spatial connections of the matrix
       ### Also known as the rows or columns at which we have to add the values of the connections 
-      spa_connections <-seq(1,length(colnames(HOBOS_dataset[[river]]))-1,1)#+((days-1)*numn_nodes)
+      spa_connections <-seq(1,length(colnames(Inermitence_dataset[[river]]))-1,1)#+((days-1)*numn_nodes)
       
       # We obtain the time steps:
       ## time_step_1 is the present
       ## time_step_2 is the following step (the close future)
-      time_step_1 <- HOBOS_dataset[[river]][days,2:ncol(HOBOS_dataset[[river]])]
-      time_step_2 <- HOBOS_dataset[[river]][days+1,2:ncol(HOBOS_dataset[[river]])]
+      time_step_1 <- Inermitence_dataset[[river]][days,2:ncol(Inermitence_dataset[[river]])]
+      time_step_2 <- Inermitence_dataset[[river]][days+1,2:ncol(Inermitence_dataset[[river]])]
+      if(weighting_links==T){day_link_weights <- link_weights[[river]][days,2:ncol(Inermitence_dataset[[river]])]}
       
       #Simple fluvial network_______________________
       ## This step fills "the diagonal" of each time_step following the direction of the river
@@ -210,16 +230,18 @@ spat_temp_index <- function(HOBOS_dataset,
           ST_matrix_netwGraph[spa_connections[site_step],
                               c(spa_connections[1]:spa_connections[numn_nodes])] <- as.numeric(Network_stru[[river]][site_step,])
           # We weight
-          if(weighting==T){ST_matrix_netwGraph[spa_connections[site_step],
-                                               c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
-                                                                                                                        c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
+          if(weighting==T & Network_variables==T){
+            ST_matrix_netwGraph[spa_connections[site_step],
+             c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
+                                                                  c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
         }else{
           ST_matrix_netwGraph[spa_connections[site_step],
                               c(spa_connections[1]:spa_connections[numn_nodes])[-site_step]] <- 0
           # We weight
-          if(weighting==T){ST_matrix_netwGraph[spa_connections[site_step],
-                                               c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
-                                                                                                                        c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
+          if(weighting==T & Network_variables==T){
+            ST_matrix_netwGraph[spa_connections[site_step],
+            c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
+                                                                 c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
         }
       }
       
@@ -262,7 +284,9 @@ spat_temp_index <- function(HOBOS_dataset,
         ## Site is the vector with the connections (follwing the river downstream).
         ## When "0" site does not correspond to any row... so the "1" does not go anywhere. 
         All_river_paths[every_path,site] <- value_S_LINK
-        # We weight
+        # We weight the links base on daily information of flow or strength of the link.
+        if(weighting_links==T){All_river_paths[every_path,] <- All_river_paths[every_path,]*as.numeric(day_link_weights[every_path])}
+        # We weight the sites for the distances between them (a pairwise matrix)
         if(weighting==T){All_river_paths[every_path,] <- All_river_paths[every_path,]*dist_matr[every_path,]}
       }
       
@@ -278,7 +302,7 @@ spat_temp_index <- function(HOBOS_dataset,
         
         # FLuvial TEMPORAL DIRECT links ___________________________________________________________________________________________________________________
         ## We generate the temporal connectins
-        temp_connections <-seq(1+numn_nodes,length(colnames(HOBOS_dataset[[river]]))-1+numn_nodes,1)#+((days)*numn_nodes) 
+        temp_connections <-seq(1+numn_nodes,length(colnames(Inermitence_dataset[[river]]))-1+numn_nodes,1)#+((days)*numn_nodes) 
         
         ## We then evaluate the difference between the two time steps and therefore we quantify:
         # - Stable links: 0 (WARNING: stable links can be stable 1-1 or 0-0!)
@@ -304,44 +328,69 @@ spat_temp_index <- function(HOBOS_dataset,
               site <- which(connect_loc>0)
             }
             All_river_paths[site_step,site] <- value_T_LINK
+            
+            # We weight the links base on daily information of flow or strength of the link.
+            if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
             # We weight
             if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
             
+            for (leg_eff in 1:legacy_lenght) {
+            All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             # TEMPORAL LINKS are filled in the "future" of our current matrix. This means that we are filling the matrix in 
             # in the diagonal of our "time step" for spatial links but we add the temporal links in the following time step. 
             # so, we evaluate here the present (time step 1) and the future (time step 2) but we register it as the past of the future (at time step 2)
             ST_matrix[spa_connections[site_step],
-                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths[site_step,]+ST_matrix[spa_connections[site_step],
-                                                                                                                 temp_connections[1]:temp_connections[numn_nodes]]
+                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                           temp_connections[1]:temp_connections[numn_nodes]]
             # Here we add the temporal "link" between "himself". If the link is stable and connected (from 1 to 1), we fill the 
             # diagonal value accordingly. Therefore, we will be able to evaluate the relationship between "himself". Kind of 
-            # Tot_Num indicator.  
+            # Tot_Num indicator.
+            value_T_LINK_modif <- value_T_LINK
+            if(weighting_links==T){value_T_LINK_modif <- value_T_LINK_modif*as.numeric(day_link_weights[site_step])}
             ST_matrix[spa_connections[site_step],
-                      temp_connections[site_step]] <- value_T_LINK+ST_matrix[spa_connections[site_step],temp_connections[site_step]]
+                      temp_connections[site_step]] <- (value_T_LINK_modif*legacy_effect[leg_eff])+ST_matrix[spa_connections[site_step],temp_connections[site_step]]
+            }
           }else{# Here we check if the temporal change implies going from 0 to 0 (so a stable disconnected link). Then we put 0
+            # We weight the links base on daily information of flow or strength of the link.
+            if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
             # We weight
             if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
-            ST_matrix[spa_connections[site_step],
-                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths[site_step,]+ST_matrix[spa_connections[site_step],
-                                                                                                                 temp_connections[1]:temp_connections[numn_nodes]]
+            for (leg_eff in 1:legacy_lenght) {
+              All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
+              ST_matrix[spa_connections[site_step],
+              temp_connections[1]:temp_connections[numn_nodes]] <-All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                               temp_connections[1]:temp_connections[numn_nodes]]
+              }
           }
         }
         
         #Lost links (when temp_change=1)
         ## This just needs to be filled with zeros... so no need to use "All_river_paths"
         if(temp_change==1){
+          # We weight the links base on daily information of flow or strength of the link.
+          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+          # We weight
           if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
-          ST_matrix[spa_connections[site_step],
-                    temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths[site_step,]+ST_matrix[spa_connections[site_step],
-                                                                                                               temp_connections[1]:temp_connections[numn_nodes]]
+          for (leg_eff in 1:legacy_lenght) {
+            All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
+            ST_matrix[spa_connections[site_step],
+            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
+            }
         }
         #Gained links (when temp_change=-1)
         ## It is a "gain" but it means that "in the present" (time step 1), the node is still disconnected. So it =0
         if(temp_change==-1){
-          if(weighting==T){All_river_paths[site_step,]*dist_matr[site_step,]}
-          ST_matrix[spa_connections[site_step],
-                    temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths[site_step,]+ST_matrix[spa_connections[site_step],
-                                                                                                               temp_connections[1]:temp_connections[numn_nodes]]
+          # We weight the links base on daily information of flow or strength of the link.
+          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+          # We weight
+          if(weighting==T){All_river_paths[site_step,] <-All_river_paths[site_step,]*dist_matr[site_step,]}
+          for (leg_eff in 1:legacy_lenght) {
+            All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
+            ST_matrix[spa_connections[site_step],
+            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
+            }
         }
         
         # FLuvial TEMPORAL INDIRECT links ___________________________________________________________________________________________________________________
@@ -363,13 +412,19 @@ spat_temp_index <- function(HOBOS_dataset,
           }
           # We fill the sites with the value
           All_river_paths[site_step,site] <- value_T_LINK
+          # We weight the links base on daily information of flow or strength of the link.
+          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
           # We weight
           if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
           # We pass it to the main matrix
-          ST_matrix[spa_connections[site_step],
-                    temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths[site_step,]+ST_matrix[spa_connections[site_step],
-                                                                                                               temp_connections[1]:temp_connections[numn_nodes]]
-        }
+          for (leg_eff in 1:legacy_lenght) {
+            All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
+            ST_matrix[spa_connections[site_step],
+            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
+            }
+          
+        }# End of the if
         
       }# Site_step closing
     }# Days closing
@@ -379,10 +434,10 @@ spat_temp_index <- function(HOBOS_dataset,
   }# Loop for every river entered in the lists
   
   # Exctracring the results into different lists
-  for (river in 1:length(HOBOS_dataset)) {ST_matrix_rivers[[river]] <- out_Matrix_LIST[[river]][[1]]}
+  for (river in 1:length(Inermitence_dataset)) {ST_matrix_rivers[[river]] <- out_Matrix_LIST[[river]][[1]]}
   
   if(Network_variables==T){
-    for (river in 1:length(HOBOS_dataset)) {
+    for (river in 1:length(Inermitence_dataset)) {
       ST_directed_Ocloseness_rivers[[river]] <- out_Matrix_LIST[[river]][[2]]
       ST_directed_Allcloseness_rivers[[river]] <- out_Matrix_LIST[[river]][[3]]
       ST_directed_betweennes_rivers[[river]] <- out_Matrix_LIST[[river]][[4]]
@@ -397,10 +452,10 @@ spat_temp_index <- function(HOBOS_dataset,
   ST_matrix_plots <- list()
   ST_matrix_out_out <- list()
   
-  for (river in 1:length(HOBOS_dataset)) {
-    numn_nodes <- ncol(HOBOS_dataset[[river]])-1
-    temp_connections <-seq(1+numn_nodes,length(colnames(HOBOS_dataset[[river]]))-1+numn_nodes,1)
-    spa_connections <-seq(1,length(colnames(HOBOS_dataset[[river]]))-1,1)
+  for (river in 1:length(Inermitence_dataset)) {
+    numn_nodes <- ncol(Inermitence_dataset[[river]])-1
+    temp_connections <-seq(1+numn_nodes,length(colnames(Inermitence_dataset[[river]]))-1+numn_nodes,1)
+    spa_connections <-seq(1,length(colnames(Inermitence_dataset[[river]]))-1,1)
     
     # We create the out matrix which match the size of our "simple" matrix num_nodes*num_nodes
     out_out <- matrix(nrow = numn_nodes,ncol = numn_nodes, data = 0)
@@ -409,7 +464,7 @@ spat_temp_index <- function(HOBOS_dataset,
     Temporal_matrix <- ST_matrix_rivers[[river]][,temp_connections]
     
     out_out <- Spatial_matrix+Temporal_matrix
-    out_out <- out_out/c(length(HOBOS_dataset[[river]][,1])-1)
+    out_out <- out_out/c(length(Inermitence_dataset[[river]][,1])-1)
     
     # We save the collapsed matrix
     ST_matrix_out_out[[river]] <- out_out
@@ -420,7 +475,7 @@ spat_temp_index <- function(HOBOS_dataset,
     
     edge_col <- rep(0, length(unlist(n$oel)))
     
-    for (edg in 1:c(ncol(HOBOS_dataset[[river]])-2)) {
+    for (edg in 1:c(ncol(Inermitence_dataset[[river]])-2)) {
       no_diag_out_out <- out_out
       diag(no_diag_out_out) <- 0
       # This line is a bit tricky but key for coloring properly the edges according to their value! 
@@ -451,7 +506,7 @@ spat_temp_index <- function(HOBOS_dataset,
   if(print.plots==TRUE){
     png(filename = paste(print.directory,"STconmat.png"),
         width = 715*6,height = 448*6,units = "px",res = 300)
-    grid.arrange(arrangeGrob(grobs = ST_matrix_plots,ncol=ceiling(length(HOBOS_dataset)/2)),
+    grid.arrange(arrangeGrob(grobs = ST_matrix_plots,ncol=ceiling(length(Inermitence_dataset)/2)),
                  top="ST Dir NonW connectivity Matrix")
     dev.off()}
   
@@ -460,11 +515,11 @@ spat_temp_index <- function(HOBOS_dataset,
   ####_______________________________________________________________________
   ST_connectivity_value <- list()
   ST_connectivity_plot <- list()
-  for (river in 1:length(HOBOS_dataset)) {
+  for (river in 1:length(Inermitence_dataset)) {
     # We already know this value
-    numn_nodes <- ncol(HOBOS_dataset[[river]])-1
-    temp_connections <-seq(1+numn_nodes,length(colnames(HOBOS_dataset[[river]]))-1+numn_nodes,1)
-    spa_connections <-seq(1,length(colnames(HOBOS_dataset[[river]]))-1,1)
+    numn_nodes <- ncol(Inermitence_dataset[[river]])-1
+    temp_connections <-seq(1+numn_nodes,length(colnames(Inermitence_dataset[[river]]))-1+numn_nodes,1)
+    spa_connections <-seq(1,length(colnames(Inermitence_dataset[[river]]))-1,1)
     
     # We create the out matrix which match the size of our "simple" matrix num_nodes*num_nodes
     out_out <- matrix(nrow = numn_nodes,ncol = numn_nodes, data = 0)
@@ -486,7 +541,7 @@ spat_temp_index <- function(HOBOS_dataset,
     
     spt_conn <-apply(out_out,1,sum)/leng_correct
     # We divide by the number of days so we obtain the "per day" values
-    spt_conn<- spt_conn/c(length(HOBOS_dataset[[river]][,1])-1)
+    spt_conn<- spt_conn/c(length(Inermitence_dataset[[river]][,1])-1)
     
     ST_connectivity_value[[river]] <- spt_conn  
     
@@ -511,7 +566,7 @@ spat_temp_index <- function(HOBOS_dataset,
   if(print.plots==TRUE){
     png(filename = paste(print.directory,"STcon.png"),
         width = 715*6,height = 448*6,units = "px",res = 400)
-    grid.arrange(arrangeGrob(grobs = ST_connectivity_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+    grid.arrange(arrangeGrob(grobs = ST_connectivity_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
                  top="ST Dir NonW connectivity")
     dev.off()}
   
@@ -520,7 +575,7 @@ spat_temp_index <- function(HOBOS_dataset,
     # ST Out closeness ####
     ####_______________________________________________________________________
     ST_Oclo_plot <- list()
-    for (river in 1:length(HOBOS_dataset)) {
+    for (river in 1:length(Inermitence_dataset)) {
       mean_Oclo <- apply(ST_directed_Ocloseness_rivers[[river]],2,mean)
       sd_Oclo <- apply(ST_directed_Ocloseness_rivers[[river]],2,sd)
       
@@ -547,7 +602,7 @@ spat_temp_index <- function(HOBOS_dataset,
     if(print.plots==TRUE){
       png(filename = paste(print.directory,"SToutclosennes.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
-      grid.arrange(arrangeGrob(grobs = ST_Oclo_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+      grid.arrange(arrangeGrob(grobs = ST_Oclo_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
                    top="ST Dir NonW Out closennes")
       dev.off()}
     
@@ -556,7 +611,7 @@ spat_temp_index <- function(HOBOS_dataset,
     # ST closeness ####
     ####_______________________________________________________________________
     ST_Allclo_plot <- list()
-    for (river in 1:length(HOBOS_dataset)) {
+    for (river in 1:length(Inermitence_dataset)) {
       mean_Allclo <- apply(ST_directed_Allcloseness_rivers[[river]],2,mean)
       sd_Allclo <- apply(ST_directed_Allcloseness_rivers[[river]],2,sd)
       
@@ -582,7 +637,7 @@ spat_temp_index <- function(HOBOS_dataset,
     if(print.plots==TRUE){
       png(filename = paste(print.directory,"STclosennes.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
-      grid.arrange(arrangeGrob(grobs = ST_Allclo_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+      grid.arrange(arrangeGrob(grobs = ST_Allclo_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
                    top="ST Dir NonW All closennes")
       dev.off()}
     
@@ -591,7 +646,7 @@ spat_temp_index <- function(HOBOS_dataset,
     # ST Betweenness calculaiton ####
     ####_______________________________________________________________________
     ST_betw_plot <- list()
-    for (river in 1:length(HOBOS_dataset)) {
+    for (river in 1:length(Inermitence_dataset)) {
       mean_betw <- apply(ST_directed_betweennes_rivers[[river]],2,mean)
       sd_betw <- apply(ST_directed_betweennes_rivers[[river]],2,sd)
       
@@ -619,7 +674,7 @@ spat_temp_index <- function(HOBOS_dataset,
     if(print.plots==TRUE){
       png(filename = paste(print.directory,"STbetweenness.png"),
           width = 715*6,height = 448*6,units = "px",res = 400)
-      grid.arrange(arrangeGrob(grobs = ST_betw_plot,ncol=ceiling(length(HOBOS_dataset)/2)),
+      grid.arrange(arrangeGrob(grobs = ST_betw_plot,ncol=ceiling(length(Inermitence_dataset)/2)),
                    top="ST Dir NonW Betweenness")
       dev.off()}
     
@@ -670,6 +725,7 @@ spat_temp_index <- function(HOBOS_dataset,
                       ST_closeness_plo=   NonW_ST_Allclo_plot,
                       ST_Betweenness=       NonW_ST_directed_betweennes_rivers,
                       ST_Betweeness_plo=   NonW_ST_betw_plot)
+  
   return(Main_output)
   ####_______________________________________________________________________
   
