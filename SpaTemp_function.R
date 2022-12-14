@@ -114,7 +114,7 @@ spat_temp_index <- function(Inermitence_dataset,
     cat("Your links will be weighted with daily data entered in the 'link_weights'","\n")
     if(nrow(link_weights[[1]])!=nrow(Inermitence_dataset[[1]]) & ncol(link_weights[[1]])!=ncol(Inermitence_dataset[[1]])){
       return(cat("Intermitence dataset and link_weights must have the same dimensions!","\n"))}
-    }
+  }
   if(weighting_links==F){cat("Your links will be normal, as defined in the LINK/NO_LINK","\n")}
   
   # We select the corresponding distance matrix
@@ -182,7 +182,9 @@ spat_temp_index <- function(Inermitence_dataset,
   ST_directed_betweennes_rivers <- list()
   
   #Parallelization parameters
-  registerDoParallel(cores = detectCores()-1)
+  cores <- detectCores() #Number of cores in computer
+  cl <- makeCluster(cores[1]-1) #not to overload your computer
+  registerDoParallel(cl)
   
   out_Matrix_LIST <- list()
   pack_check <- search()
@@ -190,7 +192,7 @@ spat_temp_index <- function(Inermitence_dataset,
   if(pack_check_val>0){detach("package:sna", unload = TRUE)}
   out_Matrix_LIST <- foreach(river=1:length(Inermitence_dataset))%dopar%{
   #for (river in 1:length(Inermitence_dataset)) { #- With this it takes 6'26''
-    # We calculate the number of nodes of our network (used along the function)  
+  # We calculate the number of nodes of our network (used along the function)  
     numn_nodes <- ncol(Inermitence_dataset[[river]])-1
     
     if(weighting==TRUE){dist_matr <- dist_matrices[[river]]}
@@ -232,16 +234,16 @@ spat_temp_index <- function(Inermitence_dataset,
           # We weight
           if(weighting==T & Network_variables==T){
             ST_matrix_netwGraph[spa_connections[site_step],
-             c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
-                                                                  c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
+                                c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
+                                                                                                         c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
         }else{
           ST_matrix_netwGraph[spa_connections[site_step],
                               c(spa_connections[1]:spa_connections[numn_nodes])[-site_step]] <- 0
           # We weight
           if(weighting==T & Network_variables==T){
             ST_matrix_netwGraph[spa_connections[site_step],
-            c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
-                                                                 c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
+                                c(spa_connections[1]:spa_connections[numn_nodes])] <-ST_matrix_netwGraph[spa_connections[site_step],
+                                                                                                         c(spa_connections[1]:spa_connections[numn_nodes])]*dist_matr[site_step,]}
         }
       }
       
@@ -335,20 +337,20 @@ spat_temp_index <- function(Inermitence_dataset,
             if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
             
             for (leg_eff in 1:legacy_lenght) {
-            All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
-            # TEMPORAL LINKS are filled in the "future" of our current matrix. This means that we are filling the matrix in 
-            # in the diagonal of our "time step" for spatial links but we add the temporal links in the following time step. 
-            # so, we evaluate here the present (time step 1) and the future (time step 2) but we register it as the past of the future (at time step 2)
-            ST_matrix[spa_connections[site_step],
-                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
-                                                                           temp_connections[1]:temp_connections[numn_nodes]]
-            # Here we add the temporal "link" between "himself". If the link is stable and connected (from 1 to 1), we fill the 
-            # diagonal value accordingly. Therefore, we will be able to evaluate the relationship between "himself". Kind of 
-            # Tot_Num indicator.
-            value_T_LINK_modif <- value_T_LINK
-            if(weighting_links==T){value_T_LINK_modif <- value_T_LINK_modif*as.numeric(day_link_weights[site_step])}
-            ST_matrix[spa_connections[site_step],
-                      temp_connections[site_step]] <- (value_T_LINK_modif*legacy_effect[leg_eff])+ST_matrix[spa_connections[site_step],temp_connections[site_step]]
+              All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
+              # TEMPORAL LINKS are filled in the "future" of our current matrix. This means that we are filling the matrix in 
+              # in the diagonal of our "time step" for spatial links but we add the temporal links in the following time step. 
+              # so, we evaluate here the present (time step 1) and the future (time step 2) but we register it as the past of the future (at time step 2)
+              ST_matrix[spa_connections[site_step],
+                        temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                                              temp_connections[1]:temp_connections[numn_nodes]]
+              # Here we add the temporal "link" between "himself". If the link is stable and connected (from 1 to 1), we fill the 
+              # diagonal value accordingly. Therefore, we will be able to evaluate the relationship between "himself". Kind of 
+              # Tot_Num indicator.
+              value_T_LINK_modif <- value_T_LINK
+              if(weighting_links==T){value_T_LINK_modif <- value_T_LINK_modif*as.numeric(day_link_weights[site_step])}
+              ST_matrix[spa_connections[site_step],
+                        temp_connections[site_step]] <- (value_T_LINK_modif*legacy_effect[leg_eff])+ST_matrix[spa_connections[site_step],temp_connections[site_step]]
             }
           }else{# Here we check if the temporal change implies going from 0 to 0 (so a stable disconnected link). Then we put 0
             # We weight the links base on daily information of flow or strength of the link.
@@ -358,9 +360,9 @@ spat_temp_index <- function(Inermitence_dataset,
             for (leg_eff in 1:legacy_lenght) {
               All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
               ST_matrix[spa_connections[site_step],
-              temp_connections[1]:temp_connections[numn_nodes]] <-All_river_paths_legacy+ST_matrix[spa_connections[site_step],
-                                                                                               temp_connections[1]:temp_connections[numn_nodes]]
-              }
+                        temp_connections[1]:temp_connections[numn_nodes]] <-All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
+            }
           }
         }
         
@@ -374,9 +376,9 @@ spat_temp_index <- function(Inermitence_dataset,
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             ST_matrix[spa_connections[site_step],
-            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
-                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
-            }
+                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                                            temp_connections[1]:temp_connections[numn_nodes]]
+          }
         }
         #Gained links (when temp_change=-1)
         ## It is a "gain" but it means that "in the present" (time step 1), the node is still disconnected. So it =0
@@ -388,9 +390,9 @@ spat_temp_index <- function(Inermitence_dataset,
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             ST_matrix[spa_connections[site_step],
-            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
-                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
-            }
+                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                                            temp_connections[1]:temp_connections[numn_nodes]]
+          }
         }
         
         # FLuvial TEMPORAL INDIRECT links ___________________________________________________________________________________________________________________
@@ -420,9 +422,9 @@ spat_temp_index <- function(Inermitence_dataset,
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             ST_matrix[spa_connections[site_step],
-            temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
-                                                                                             temp_connections[1]:temp_connections[numn_nodes]]
-            }
+                      temp_connections[1]:temp_connections[numn_nodes]] <- All_river_paths_legacy+ST_matrix[spa_connections[site_step],
+                                                                                                            temp_connections[1]:temp_connections[numn_nodes]]
+          }
           
         }# End of the if
         
@@ -432,6 +434,8 @@ spat_temp_index <- function(Inermitence_dataset,
     out_Matrix <- list(ST_matrix,ST_Oclosenness_matrix,ST_Allclosenness_matrix,ST_betweennes_matrix)
     out_Matrix_LIST[[river]] <- out_Matrix
   }# Loop for every river entered in the lists
+  
+  parallel::stopCluster(cl) #Stop parallel computing
   
   # Exctracring the results into different lists
   for (river in 1:length(Inermitence_dataset)) {ST_matrix_rivers[[river]] <- out_Matrix_LIST[[river]][[1]]}
