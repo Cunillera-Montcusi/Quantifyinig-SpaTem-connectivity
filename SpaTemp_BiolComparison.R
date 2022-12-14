@@ -9,6 +9,7 @@ library(car)
 library(multcompView)
 library(ade4)
 library(vegan)
+library(tidyverse)
 detach("package:plyr", unload = TRUE)
 
 ### IMPORTANT: TO PROPERLY RUN THIS SCRIPT YOU NEED TO RUN the following scripts: 
@@ -375,12 +376,18 @@ HOB_BDD_match <- HOB_BDD_match%>%dplyr::select(-c(NonW_Dir_Ocl,NonW_Dir_Acl,NonW
 
 CunilleraPAL_corrected <- CUNILLERA_pal("LGTBI")(7)[-3]
 
-names_scenarios <- c("Scenario A1",
-                     "Scenario A2",
-                     "Scenario B1",
-                     "Scenario B2", 
+names_scenarios <- c("DirBin",
+                     "DirWei",
+                     "UndBin",
+                     "UndWei", 
                      "TotDur", "TotNum", "TotLeng")
+axistextcolours <- c(viridis::viridis(5)[3],viridis::inferno(5)[3],
+                     viridis::viridis(5)[3],viridis::inferno(5)[3])
 
+axisXtitles <- c(c("Isolated   <-- log(STcon) -->  Connected"), 
+                 c("Low disp. resist <-- log(STcon) --> High disp. resist"),
+                 c("Isolated   <-- log(STcon) -->  Connected"), 
+                 c("Low disp. resist <-- log(STcon) --> High disp. resist"))
 
 # 5.1. Richness ####
 plots_HOB_BDD_total <- list()
@@ -435,12 +442,15 @@ plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=
     #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_manual(values =  CunilleraPAL_corrected)+
     scale_color_manual(values =  CunilleraPAL_corrected)+
-    xlab(paste("log(STcon)"))+
+    xlab(paste(axisXtitles[col_var]))+
     ylab(paste("log(Richness)"))+
     labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
     labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
     theme_classic()+
-    theme(legend.position="none")
+    theme(legend.position="none",
+          axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+          axis.text.x = element_text(color =axistextcolours[col_var] ),
+          axis.title.x = element_text(color =axistextcolours[col_var] , size=8 ))
     #facet_grid(.~ID)  
   }
 }
@@ -522,12 +532,15 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
       #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STcon)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("log(Shannon)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8  ))
     #facet_grid(.~ID)  
   }
 }
@@ -610,12 +623,15 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
       #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STcon)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("log(Trait abundance)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8  ))
     #facet_grid(.~ID)  
   }
 }
@@ -669,6 +685,11 @@ colnames(output)[1] <- "ID"
 
 STmatrix_BiolDissim <- output
 
+axisXtitles <- c(c("Isolated   <-- log(STconmat) -->  Connected"), 
+                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"),
+                 c("Isolated   <-- log(STconmat) -->  Connected"), 
+                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"))
+
 # 5.4.1. Plot Bray ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
@@ -714,12 +735,15 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
       #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STconmat)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("Bray curtis"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var] , size=8 ))
     #facet_grid(.~ID)  
   }
 }
@@ -751,6 +775,8 @@ plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 # 5.4.2. Plot Jaccard ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
+
+
 for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
@@ -795,12 +821,15 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
       #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STconmat)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("Jaccard"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8 ))
     #facet_grid(.~ID)  
   }
 }

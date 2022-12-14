@@ -18,10 +18,9 @@ ups_dos
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # Data processing and plotting for the different values 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
 # Matrix ST outputs obtained from "SpaTemp_HOBOS_treatment.R"
 NonW_ST_matrix_out_out
-WEIG_ST_matrix_out_out
+WEIG_ST_matrix_out_out 
 Un_NonW_ST_matrix_out_out
 Un_WEIG_ST_matrix_out_out
 
@@ -263,7 +262,7 @@ four_approxim <- list(NonW_ST_directed_out,
 
 for (a in 1:length(four_approxim)) {
 png(filename =paste("Figure/Data_treat/",names_approxim[a],".png"), 
-      width = 700*4, height = 600*4, 
+      width = 700*2, height = 900*2, 
       units = "px",res = 300)
 
 rows_filter <- unlist(c(four_approxim[[a]]%>%
@@ -283,43 +282,43 @@ grid.arrange(
     scale_color_CUNILLERA(palette = "LGTBI")+
     xlab("HOBO relative position Upstream-Downstream")+
     ylab("ST Connecticity")+
-    theme_classic()+theme(legend.position="none"),
+    theme_classic()+theme(legend.direction = "vertical",legend.box="vertical")+facet_grid(ID~.),
+#  
+#  ggplot(data = four_approxim[[a]])+
+#    geom_point(aes(x=DtoU,y=four_approxim[[a]][,4] ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
+#    geom_line(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.3, linetype=2)+
+#    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.2, method = "lm",se = F)+
+#    scale_fill_CUNILLERA(palette = "LGTBI")+
+#    scale_color_CUNILLERA(palette = "LGTBI")+
+#    xlab("HOBO relative position Upstream-Downstream")+
+#    ylab("ST Out closeness")+
+#    theme_classic()+theme(legend.position="none"),
+#  
+#  ggplot(data = four_approxim[[a]])+
+#    geom_point(aes(x=DtoU,y=four_approxim[[a]][,5]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
+#    geom_line(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.3, linetype=2)+
+#    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.2, method = "lm",se = F)+
+#    scale_fill_CUNILLERA(palette = "LGTBI")+
+#    scale_color_CUNILLERA(palette = "LGTBI")+
+#    xlab("HOBO relative position Upstream-Downstream")+
+#    ylab("ST All closeness")+
+#    theme_classic()+theme(legend.position="none"),
+#  
+#  ggplot(data = four_approxim[[a]])+
+#    geom_point(aes(x=DtoU,y=four_approxim[[a]][,6]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
+#    geom_line(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.3, linetype=2)+
+#    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.2, method = "lm",se = F)+
+#    scale_fill_CUNILLERA(palette = "LGTBI")+
+#    scale_color_CUNILLERA(palette = "LGTBI")+
+#    xlab("HOBO relative position Upstream-Downstream")+
+#    ylab("ST Betwenness")+
+#    theme_classic()+theme(legend.position="none"),
   
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,4] ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+
-    scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+
-    ylab("ST Out closeness")+
-    theme_classic()+theme(legend.position="none"),
-  
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,5]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+
-    scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+
-    ylab("ST All closeness")+
-    theme_classic()+theme(legend.position="none"),
-  
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,6]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+
-    scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+
-    ylab("ST Betwenness")+
-    theme_classic()+theme(legend.position="none"),
-  
-  get_legend(ggplot(NonW_ST_directed_out)+
-               geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),shape=21, size=2)+
-               scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
-               theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical")),
-  nrow=3 ,ncol=2 ,top=names_approxim[a])
+#  get_legend(ggplot(NonW_ST_directed_out)+
+#               geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),shape=21, size=2)+
+#               scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
+#               theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical")),
+  nrow=1 ,ncol=1 ,top=names_approxim[a])
 dev.off()
 }
 
@@ -386,27 +385,38 @@ dev.off()
 png(filename =paste("Figure/Data_treat/CorPlot_STcon_OldHOB.png"), 
     width = 800*4, height = 600*4, 
     units = "px",res = 300)
-corrmorant::corrmorant(cbind("STcon 1.1."=NonW_ST_directed_out$NonW_Dir_con,
-                             "log(STcon) 1.2."=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
-                             "STcon 2.1"=Un_NonW_ST_out$Un_NonW_con,
-                             "log(STcon) 2.2"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
+corrmorant::corrmorant(cbind("DirBin"=NonW_ST_directed_out$NonW_Dir_con,
+                             "log(DirWei)"=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
+                             "UndBin"=Un_NonW_ST_out$Un_NonW_con,
+                             "log(UndWei)"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
                              "log(TotDur)"= log(Old_HOBOS_comb[,3]+1),
                              "log(TotNum)"= log(Old_HOBOS_comb[,4]+1),
                              "log(TotLeng)"= log(Old_HOBOS_comb[,5]+1)),
                             rescale = "by_sd",corr_method = "spearman")
 dev.off()
 
-cor.test(NonW_ST_directed_out$NonW_Dir_con,
-         log(Old_HOBOS_comb[,3]+1),method="spearman", exact = FALSE)
-cor.test(NonW_ST_directed_out$NonW_Dir_con,
-         log(Old_HOBOS_comb[,4]+1),method="spearman", exact = FALSE)
 
-cor.test(Un_NonW_ST_out$Un_NonW_con,
-         log(Old_HOBOS_comb[,3]+1),method="spearman",exact = FALSE)
-cor.test(Un_NonW_ST_out$Un_NonW_con,
-         log(Old_HOBOS_comb[,4]+1),method="spearman",exact = FALSE)
-  
+a <- cbind("STcon 1.1."=NonW_ST_directed_out$NonW_Dir_con,
+      "log(STcon) 1.2."=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
+      "STcon 2.1"=Un_NonW_ST_out$Un_NonW_con,
+      "log(STcon) 2.2"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
+      "log(TotDur)"= log(Old_HOBOS_comb[,3]+1),
+      "log(TotNum)"= log(Old_HOBOS_comb[,4]+1),
+      "log(TotLeng)"= log(Old_HOBOS_comb[,5]+1))
 
 
+out <- matrix(nrow = 7,ncol=7)
+for (colu in 1:7) {
+  out[colu,1] <- round(cor.test(a[,colu],a[,1],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,2] <-round(cor.test(a[,colu],a[,2],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,3] <-round(cor.test(a[,colu],a[,3],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,4] <-round(cor.test(a[,colu],a[,4],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,5] <-round(cor.test(a[,colu],a[,5],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,6] <-round(cor.test(a[,colu],a[,6],method="spearman", exact = FALSE)$p.value,5)
+  out[colu,7] <-round(cor.test(a[,colu],a[,7],method="spearman", exact = FALSE)$p.value,5)
+}
+colnames(out) <- colnames(a)
+rownames(out) <- colnames(a)
 
+write.csv2(out,file = "correlationtable.csv")
 

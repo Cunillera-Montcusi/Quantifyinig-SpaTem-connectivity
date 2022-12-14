@@ -3,7 +3,7 @@
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 setwd("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/MECODISPER SpaTem")
-source("SpaTemp_HOBOS_function.R")
+source("SpaTemp_function.R")
 
 Sites <- read.csv("Raw_HOBOS_Database/Longlat_Rius.csv", header = T, sep = ";", dec = ",")
 colnames(Sites) <- c("Riera", "Codi_HOBO","Latitud","Longitud")
@@ -42,8 +42,8 @@ for (sit in 1:length(HOBOS_sites)) {
   Sites_list[[sit]] <- Sites%>%filter(Codi_HOBO%in%names_hobos)%>%
                                left_join(Stream_order, by="Codi_HOBO")%>%
                                arrange(UtoD)%>%
-                               dplyr::select(Riera,Codi_HOBO,Latitud,Longitud)
-plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
+                               dplyr::select(Riera,Codi_HOBO,Longitud,Latitud)
+#plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
 }
 par(mfrow=c(1,1))
 
@@ -75,8 +75,6 @@ bd <- as.Date(date_HOBOS)
 #End
 # We change the end for the total dataset (513 days) or for comparing only with Autumn
 ed <- as.Date(date_correct_Autumn)
-#ed <- as.Date(date_correct_Autumn)
-
 
 # Difference in number of days will correspond to the number of rows to be selected. 
 time_window_beg <- as.numeric(difftime(bd+1, date_HOBOS, units = "days")) 
@@ -95,80 +93,110 @@ for (site in 1:length(HOBOS_sites)) {
 # Must be a list of distances matrix for each river. 
 # Must be a symmetric matrix (upper and lower triangles must be equal). The function already selects which distances 
 #are selected in each case.  
+# Distances must be small! In this case they are in km
 eucl_dist_matrices <- list()
 for (river in 1:length(Sites_list)) {
-  eucl_dist_matrices[[river]] <-as.matrix(dist(Sites_list[[river]][,4:3],diag = T,upper = T)) 
+  eucl_dist_matrices[[river]] <-as.matrix(dist(Sites_list[[river]][,4:3],diag = T,upper = T))/1000 
 }
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# 4. Calculation of ST indices ####
+# 4. Network structure creation ####
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
+# Must be a list with the network strucutre for each river.
+# For directed scenarios
+Dir_netw_struct_matrices <- list()
+for (river in 1:length(HOBOS_sites)) {
+  Dir_SpatConnect <- seq(1:c(ncol(HOBOS_sites[[river]])-1))
+  netw_struct_matrix <- matrix(nrow =length(Dir_SpatConnect),ncol = length(Dir_SpatConnect),0)
+  for (site_step in 1:length(Dir_SpatConnect)-1) {
+    netw_struct_matrix[Dir_SpatConnect[site_step],Dir_SpatConnect[site_step]+1] <- 1}
+Dir_netw_struct_matrices[[river]] <- netw_struct_matrix
+}
+
+# For undirected scenarios 
+UNdir_netw_struct_matrices <- list()
+for (river in 1:length(HOBOS_sites)) {
+  Dir_SpatConnect <- seq(1:c(ncol(HOBOS_sites[[river]])-1))
+  netw_struct_matrix <- matrix(nrow =length(Dir_SpatConnect),ncol = length(Dir_SpatConnect),0)
+  for (site_step in 1:length(Dir_SpatConnect)) {
+    netw_struct_matrix[Dir_SpatConnect[site_step],
+                       c(Dir_SpatConnect[1]:length(Dir_SpatConnect))[-site_step]]<- 1}
+UNdir_netw_struct_matrices[[river]] <- netw_struct_matrix
+}
+
+
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# 5. Calculation of ST indices ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # Building a directed non weighted network
 # Value of link=1
 # Value of NO link=0
-Dir_NonW_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+Dir_NonW_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="directed", 
-                                weighting=FALSE,
+                                direction="directed", sense = "out",
+                                Network_stru =Dir_netw_struct_matrices,
+                                weighting=FALSE,dist_matrices = NULL,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=1,
                                 value_T_LINK=1,
                                 value_NO_S_link=0,
                                 value_NO_T_link=0,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                Network_variables=F,print.plots=F,print.directory="")
 
 # Building a directed Weighted network
 # Value of link= 0.1
 # Value of NO link=1
 # - I am evaluationg "resistance" to move from one to another. 
 # SO, higher numbers mean High resistance
-Dir_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+Dir_WEIG_Net <- spat_temp_index(Inermitence_dataset =HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="directed", 
-                                weighting=TRUE,
-                                dist_matrices = eucl_dist_matrices,
+                                direction="directed", sense = "out",
+                                weighting=TRUE, dist_matrices = eucl_dist_matrices,
+                                Network_stru =Dir_netw_struct_matrices,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
-                                value_NO_T_link=1,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                value_NO_T_link=1,Virid_option = "B",
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 
 # Building a Undirected non weighted network
 # Value of link=1
 # Value of NO link=0
-UnD_NonW_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+UnD_NonW_Net <- spat_temp_index(Inermitence_dataset =HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="undirected", 
-                                weighting=FALSE,
+                                direction="undirected", sense = "all",
+                                weighting=FALSE,dist_matrices = NULL,
+                                Network_stru =UNdir_netw_struct_matrices, 
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=1,
                                 value_T_LINK=1,
                                 value_NO_S_link=0,
                                 value_NO_T_link=0,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 
 # Building a Undirected Weighted network
 # Value of link= 0.1
 # Value of NO link=1
 # - I am evaluationg "resistance" to move from one to another. 
 # SO, higher numbers mean High resistance
-UnD_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+UnD_WEIG_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="undirected", 
-                                weighting=TRUE,
-                                dist_matrices = eucl_dist_matrices,
+                                direction="undirected",  sense = "all",
+                                weighting=TRUE, dist_matrices = eucl_dist_matrices,
+                                Network_stru =UNdir_netw_struct_matrices,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
-                                value_NO_T_link=1,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                value_NO_T_link=1,Virid_option = "B",
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 5. Data extraction and indices treatment ####
