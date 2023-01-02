@@ -28,15 +28,11 @@
 
 # Mainly, the information that should be contained in the datasets must represent some sort of habitat availability 
 # like habitat presence/absence (e.g. aquatic habitats wet/dry phases) or habitat connectivity strengths (e.g. flows 
-# in rivers) or any other type of interpretation that has ecological meaning and that can be related with Spatial and 
+# in rivers) or any other type of interpretation that has ecological meaning and that can be related with spatial and 
 # temporal patterns. 
 
-# ONE main information must be provided and must be considered before to use the function: THE SPATIOTEMPORAL INFORMATION AND STRUCTURE
-#The function is thought for streams/rivers which have a stron directional pattern (Upstream to downstream). Therefore, the table provided
-#must respect this directionality as well as the required format to let the method work properly. 
-
+# Intermitence_dataset ____________#
 # See below, an example of the type of matrix that must be entered in the function as Inermitence_dataset
-
 #data.frame(
 #MonitoredDays= c("Day1","Day2","Day3","Day4"), # An identifier for the monitored days from ORDERED from the "oldest" to the "newest"
 #StreamSite1=c(0,1,1,1), # More upstream site water presence record (1= water presence, 0= water absence)
@@ -50,19 +46,41 @@
 #StreamSite9=c(1,1,1,1), # Following monitored site water presence record in descending order 
 #StreamSite10=c(1,1,1,1),# Following monitored site water presence record in descending order 
 #)
-
 # This information is KEY to preserve the structure and functioning of the function. The system does not necessarily need to quantify 
 #water absence/presence but each cell value must represent a feature defining connectivity "on" or "off" and that can be transmitted 
 #to built ecologically meaningful links in a spatiotemporal graph. 
-# The meaning of a "yes" (Input matrix value= 1) or a "no" (Input matrix value= 0) can be later modified by the values assigned to  
-# the "LINK" (spatial and temporal) within the figure. 
 
-# direction either "directed" or "undirected" --> Undirected considers that all neighbours are equally reachable. 
+# Sites coordinates ____________#
+# The coordinates of the sites must be located at columns 3 and 4 of the data.frame in order to be read properly.
 
+# LINK and NO-LINK values ____________#
+# The meaning of a "LINK" (Input matrix value= 1) or a "NO-LINK" (Input matrix value= 0) can be modified inside the function according
+#to the different interpretations that one once to give to the values (e.g. do we want to quantify connectivity? dispersal resistance?)
+#see the above mentioned paper to see an specific example. 
+
+# Set direction ____________#
+# direction can be either "directed" or "undirected". This feature will modify the way the graph is being controlled. 
+
+# sense ____________#
+# Sense is referring to the direction that will be considered for the graph connectivity when directed. Specially for centrality metrics. 
+# It can be either "in", "out", "all". See ?igraph or ?igraph::closeness for a better understanding. 
+
+# Weighting ____________#
 # weighting either FALSE or TRUE --> The value of the weight is defined by the matrix added (must be in a distance matrix format) and 
 #can consider any type of distance between pairs of monitored sites (euclidean, environmental, topographic, ...)
 #dist_matrices--> corresponds to the attached matrix representing the "distances" between sites. 
 
+# Network_structure ____________#
+# Network structure is a matrix that corresponds to the "basic" connections that can be possible. An adjacency matrix where all 
+#sites are connected among them. Should be equivalent to the network that you would expect from a "fully" connected network. 
+
+# weighting_links=FALSE & link_weights ____________#
+# In case that instead of using the values used as "LINKS/NO-LINKS" that are "qualitative" we have specific data for every time unit 
+#that can be used ot quantify the connections between sites (e.g. flow data, wind strenght etcetera). This information can be
+#incorporated by selecting weighting_links=TRUE and then providing a list of data.frames with exactly the same information as
+#the "Intermitence_dataset", having the same amount of rows and columns (e.g. dauly flow data in each site).
+
+# LINKS / NO-LINKS  ____________#
 # value_LINK is the value attributed for each "effective link", which is a connection between two nodes (a line)
 # - value_S_LINK for spatial links
 # - value_T_LINK for temporal links
@@ -70,24 +88,37 @@
 # - value_NO_S_LINK for spatial links
 # - value_NO_T_LINK for temporal links
 
-# WARNING ! All values must be entered in a list format, even if only 1 matrix is used. This is done in order to allow the possibility 
-# to enter several streams in one call and obtain the results according to that.   
+# Legacy effects & Legacy lenght  ____________#
+#Legacy effects are a way to quantify spatiotemporal connectivity during several time units at the same time. This means that we 
+#can quantify temporal links for more than 1 time unit and modify the weight or relevance that each time unit has. 
+#For example: 
+# - Legacy lenght defines the "number" of time units considered. By default it is set to 1 which means that the function will consider 
+#only 1 time unit (the connectivity of time T1 will only be considered for T2). If value is set at legacy lenght=3 the connectivity of 
+#T1 will be considered for T2, T3, and T4 (the connections present at T1 will be also considered for the 3 following T).
+# - Legacy effect defines the weight given to the LINK / NO-LINK values for each time unit. It is a vector with values ranging from
+#0 to 1 that will modulate the relevance of a connection through time. 
+
+# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !
+# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !# WARNING !
+# The values of Inermitence_dataset,Sites_coordinates,Network_stru must be entered in a list format, even if only 1 matrix is used. 
+#This is done in order to allow the possibility to enter several streams in one call and obtain the results according to that.
+# In case of using dist_matrices and link_weights they must also be entered as list(). 
 
 spat_temp_index <- function(Inermitence_dataset, 
                             Sites_coordinates,
                             direction,
                             sense="out",
                             weighting=FALSE,
-                            Network_stru,
                             dist_matrices,
                             weighting_links=FALSE,
                             link_weights,
+                            Network_stru,
                             value_S_LINK=1,
                             value_T_LINK=1,
                             value_NO_S_link=0,
                             value_NO_T_link=0,
-                            legacy_effect,
-                            legacy_lenght,
+                            legacy_effect=1,
+                            legacy_lenght=1,
                             Network_variables=FALSE,
                             print.plots=TRUE,
                             print.directory){
@@ -113,7 +144,7 @@ spat_temp_index <- function(Inermitence_dataset,
   if(weighting_links==T){
     cat("Your links will be weighted with daily data entered in the 'link_weights'","\n")
     if(nrow(link_weights[[1]])!=nrow(Inermitence_dataset[[1]]) & ncol(link_weights[[1]])!=ncol(Inermitence_dataset[[1]])){
-      return(cat("Intermitence dataset and link_weights must have the same dimensions!","\n"))}
+      return(cat("!!!ERROR: Intermitence dataset and link_weights must have the same dimensions!","\n"))}
   }
   if(weighting_links==F){cat("Your links will be normal, as defined in the LINK/NO_LINK","\n")}
   
@@ -122,17 +153,21 @@ spat_temp_index <- function(Inermitence_dataset,
   if(weighting==F){cat("Your connectivity will be NON weighted, connections will not be multiplied by any distance matrix","\n")}
   
   if(legacy_lenght!=length(legacy_effect)){
-    return(cat("The length of your legacy effects is", length(legacy_effect), "and your legacy length is", legacy_lenght,"! They must be the same!", "\n"))}
+    return(cat("!!!ERROR: The length of your legacy effects is", length(legacy_effect), "and your legacy length is", legacy_lenght,"! They must be the same!", "\n"))}
   
   if(length(which(c(is.list(Inermitence_dataset),is.list(Sites_coordinates),is.list(Network_stru))==F))>0){
     return(cat("Your Inermitence_dataset,Sites_coordinates or Network_stru must be list objects", "\n"))}
-  if(weighting==T & is.list(dist_matrices)==F){return(cat("Your distance matrix must be a list object"))}
+  if(weighting==T & is.list(dist_matrices)==F){return(cat("!!!ERROR: Your distance matrix must be a list object"))}
   
   # Simple river network________________####
   # Building river networks based on just directional network.
   Simple_river_network <- list()
   Simple_river_network_maps <- list()
   for (river in 1:length(Inermitence_dataset)) {
+    
+    if(is.numeric(Sites_coordinates[[river]][,3:4])==F){
+      return(cat("!!!ERROR: X and Y coordinates must be at columns 3 and 4 of the Sites_coordinates"))}
+    
     ST_matrix_out <- matrix(nrow = ncol(Inermitence_dataset[[river]])-1,ncol = ncol(Inermitence_dataset[[river]])-1, data=0)
     spa_connections <-seq(1,ncol(Inermitence_dataset[[river]])-1,1)
     time_step_1 <- rep(1,ncol(Inermitence_dataset[[river]])-1)
