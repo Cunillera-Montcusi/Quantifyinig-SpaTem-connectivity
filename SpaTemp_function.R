@@ -120,6 +120,7 @@ spat_temp_index <- function(Inermitence_dataset,
                             legacy_effect=1,
                             legacy_lenght=1,
                             Network_variables=FALSE,
+                            Virid_option="D",
                             print.plots=TRUE,
                             print.directory){
   
@@ -165,7 +166,7 @@ spat_temp_index <- function(Inermitence_dataset,
   Simple_river_network_maps <- list()
   for (river in 1:length(Inermitence_dataset)) {
     
-    if(is.numeric(Sites_coordinates[[river]][,3:4])==F){
+    if(is.numeric(Sites_coordinates[[river]][,3])==F & is.numeric(Sites_coordinates[[river]][,4])==F){
       return(cat("!!!ERROR: X and Y coordinates must be at columns 3 and 4 of the Sites_coordinates"))}
     
     ST_matrix_out <- matrix(nrow = ncol(Inermitence_dataset[[river]])-1,ncol = ncol(Inermitence_dataset[[river]])-1, data=0)
@@ -531,8 +532,8 @@ spat_temp_index <- function(Inermitence_dataset,
                  arrow=arrow(angle = 20), curvature = 0.15) +
       #geom_nodes(aes(fill=Site_values, size=Site_values*10), color="black" ,shape=21)+
       geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
-      scale_color_viridis(direction = -1)+
-      scale_fill_viridis(direction = -1)+
+      scale_color_viridis(direction = -1,option = Virid_option)+
+      scale_fill_viridis(direction = -1,option = Virid_option)+
       #scale_color_gradient2(low = "brown",high = "blue",midpoint = 0.5)+
       #scale_fill_gradient2(low ="darkred",high = "darkgreen",midpoint = 0.5)+
       theme_classic()+
@@ -593,8 +594,8 @@ spat_temp_index <- function(Inermitence_dataset,
       geom_edges(aes(color =edges_CC_values, size=edges_CC_values),arrow=arrow(angle = 20),curvature = 0.15) +
       #geom_nodes(aes(size=CC_values), color="black" ,shape=16)+
       geom_nodes(size=3, fill="grey40", color="black" ,shape=21)+
-      scale_color_viridis(direction = -1)+
-      scale_fill_viridis(direction = -1)+
+      scale_color_viridis(direction = -1,option = Virid_option)+
+      scale_fill_viridis(direction = -1,option = Virid_option)+
       theme_classic()+
       theme(axis.text = element_blank(),
             axis.ticks = element_blank(),
@@ -628,8 +629,8 @@ spat_temp_index <- function(Inermitence_dataset,
         geom_edges(aes(color =edges_CC_values, size=edges_CC_values),arrow=arrow(angle = 20),curvature = 0.15) +
         geom_nodes(aes(size=Sd_values),fill="grey50", color="black" ,shape=21, alpha=0.2)+
         geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
-        scale_color_viridis(direction = -1)+
-        scale_fill_viridis(direction = -1)+
+        scale_color_viridis(direction = -1,option = Virid_option)+
+        scale_fill_viridis(direction = -1,option = Virid_option)+
         theme_classic()+
         theme(axis.text = element_blank(),
               axis.ticks = element_blank(),
@@ -664,8 +665,8 @@ spat_temp_index <- function(Inermitence_dataset,
         geom_edges(aes(color =edges_CC_values, size=edges_CC_values),arrow=arrow(angle = 20),curvature = 0.15) +
         geom_nodes(aes(size=Sd_values),fill="grey50", color="black" ,shape=21, alpha=0.2)+
         geom_nodes(aes(fill=CC_values, size=CC_values), color="black" ,shape=21)+
-        scale_color_viridis(direction = -1)+
-        scale_fill_viridis(direction = -1)+
+        scale_color_viridis(direction = -1,option = Virid_option)+
+        scale_fill_viridis(direction = -1,option = Virid_option)+
         theme_classic()+
         theme(axis.text = element_blank(),
               axis.ticks = element_blank(),
@@ -699,8 +700,8 @@ spat_temp_index <- function(Inermitence_dataset,
         geom_edges(aes(color =edges_BC_values, size=edges_BC_values),arrow=arrow(angle = 20),curvature = 0.15) +
         geom_nodes(aes(size=Sd_values),fill="grey50", color="black" ,shape=21, alpha=0.2)+
         geom_nodes(aes(fill=B_values, size=B_values), color="black" ,shape=21)+
-        scale_color_viridis(direction = -1)+
-        scale_fill_viridis(direction = -1)+
+        scale_color_viridis(direction = -1,option = Virid_option)+
+        scale_fill_viridis(direction = -1,option = Virid_option)+
         theme_classic()+
         theme(axis.text = element_blank(),
               axis.ticks = element_blank(),

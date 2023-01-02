@@ -7,8 +7,8 @@ output: rmdformats::downcute
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T,
@@ -46,10 +46,10 @@ source("SpaTemp_HOBOS_function.R")
 
 The initial step is to charge the datasets containing the names of each monitored site containing the stream name, the ID code and the latitude and longitude. This dataset will be used to localize each one of the data loggers along the river (the "Longlat_Rius.csv" can be found in the repository - LINK)
 
-The following step is to upload the HOBOS_sites information, which corresponds to the *A) Water permanence database* (Figure 1). We upload individually the tables for each stream (one sheet for each stream). These ".csv" documents can be found in the online repository - LINK and contain the information about each daily wet/dry status of each stream. 
+The following step is to upload the HOBOS_sites information, which corresponds to the *Water permanence database* (Figure 1). We upload individually the tables for each stream (one sheet for each stream). These ".csv" documents can be found in the online repository - LINK and contain the information about each daily wet/dry status of each stream. 
 
 ```{r Figure 1A, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Figure1.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Figure1.png")
 ```
 
 *IMPORTANT INFORMATION:* For each one of these ".csv" documents the data loggers must be ordered in Upstream to Downstream direction and must have the following structure: 
@@ -66,7 +66,7 @@ DownstreamSite5=c(1,1,1,1)
 Finally, we upload the "Stream_order" database. This database contains the Upstream - Downstream "order" of each datalogger (1 being Upstream). The file "Stream Order.csv" can be found in the online repository - LINK. Later, we check and correct some coordinates to make sure that each datalogger has a unique coordinate and plot them individually to assess if they are correctly placed in space. 
 
 With this initial process we will depurate and charge the two most important informations required for the function:
-*1. HOBOS_dataset*
+*1. Inermitence_dataset*
 *2. Sites_coordinates*
 
 ```{r Charging_Depurating, eval=FALSE}
@@ -82,6 +82,7 @@ plot(Sites$Longitud, Sites$Latitud)
 # We upload the order of the rivers from Upstream to Downstream to arrange the HOBOS into the desired order
 ## IMPORTANT: This order will also define the direction of the river! 
 ## The first HOBO in the row of the "Sites_list" must be the first HOBO in the Column of "HOBOS_sites"
+
 HOBOS_sites <- list(
   read.csv("Raw_HOBOS_Database/CA_HOBOS_data.csv", header = T, sep = ";"),
   read.csv("Raw_HOBOS_Database/M_HOBOS_data.csv", header = T, sep = ";"),
@@ -106,8 +107,8 @@ for (sit in 1:length(HOBOS_sites)) {
   Sites_list[[sit]] <- Sites%>%filter(Codi_HOBO%in%names_hobos)%>%
                                left_join(Stream_order, by="Codi_HOBO")%>%
                                arrange(UtoD)%>%
-                               dplyr::select(Riera,Codi_HOBO,Latitud,Longitud)
-plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
+                               dplyr::select(Riera,Codi_HOBO,Longitud,Latitud)
+#plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
 }
 par(mfrow=c(1,1))
 ```
@@ -119,7 +120,6 @@ To select different "time windows" in order to calculate ST indicies for the the
 As each row of the matrix "HOBOS_sites" corresponds to a unique day, the difference (in days) between two dates (beginning vs end or beginning vs Autumn sampling) will deliver the number of rows that we have to select from the "HOBOS_sites" in order to account for the desired "time-window". Therefore, after this second step we will have the correct *HOBOS_sites* matrix corresponding to the time-window that we want to focus.   
 
 ```{r dates management, eval=FALSE}
-# We upload the biological data just to see the Date of the interval that we want to capture 
 ### Autumn dataset - November 2019
 BDD <- read.csv2("BiolData/Matriz_otoño.csv", sep=";")
 date_correct_Autumn <- min(unique(BDD$Date))
@@ -138,8 +138,10 @@ date_HOBOS_end <- "2019-12-20"
 
 #Beginning
 bd <- as.Date(date_HOBOS)
+
 #End
-ed <- as.Date(date_HOBOS_end)
+# We change the end for the total dataset (513 days) or for comparing only with Autumn
+ed <- as.Date(date_correct_Autumn)
 
 # Difference in number of days will correspond to the number of rows to be selected. 
 time_window_beg <- as.numeric(difftime(bd+1, date_HOBOS, units = "days")) 
@@ -147,7 +149,6 @@ time_window_beg <- round(time_window_beg)
 time_window_end <- as.numeric(difftime(ed, date_HOBOS, units = "days"))
 time_window_end <- round(time_window_end)
 
-# We select the corresponding number of days for each stream
 for (site in 1:length(HOBOS_sites)) {
   HOBOS_sites[[site]] <- HOBOS_sites[[site]][time_window_beg:time_window_end,]
 }
@@ -155,113 +156,174 @@ for (site in 1:length(HOBOS_sites)) {
 
 ### 3. Distance matrix creation
 
-Finally, if we wish to calculate weighted indices we have to create a weighted pairwise matrix with the desired distance. In our case we caluclate the euclidean distances based on the longitude and latitude. We use the coordinates information contained in "Sites_list" object. 
+If we wish to calculate weighted indices we have to create a weighted pairwise matrix with the desired distance. In our case we caluclate the euclidean distances based on the longitude and latitude. We use the coordinates information contained in "Sites_list" object. 
 
-By doing this we obtain the last required information for running the function, the *dist_matrices*, here named "eucl_dist_matrices" as we used the direct euclidean distances between monitored sites. 
+By doing this we obtain another required information for running the function, the *dist_matrices*, here named "eucl_dist_matrices" as we used the direct euclidean distances between monitored sites. 
 
 ```{r distances management, eval=FALSE}
 # Must be a list of distances matrix for each river. 
 # Must be a symmetric matrix (upper and lower triangles must be equal). The function already selects which distances 
 #are selected in each case.  
+# Distances must be small or the function my increase a lot computational demands! In this case they are in km
 eucl_dist_matrices <- list()
 for (river in 1:length(Sites_list)) {
-  eucl_dist_matrices[[river]] <-as.matrix(dist(Sites_list[[river]][,4:3],diag = T,upper = T)) 
+  eucl_dist_matrices[[river]] <-as.matrix(dist(Sites_list[[river]][,4:3],diag = T,upper = T))/1000 
 }
 ```
+
+### 4. Network structure creation
+
+Finally, we need to set the network structure. This is a representation of how our sampled sites are organized in space. We do this by creating 
+an adjacency matrix that corresponds to a head to downstream direction or *directed structure* and anothe where all sites can be reached from everywhere or *undirected structure*. By doing this we finalize all the required information to run the function.
+
+```{r networkstruc, eval=FALSE}
+# Must be a list with the network strucutre for each river.
+# For directed scenarios
+Dir_netw_struct_matrices <- list()
+for (river in 1:length(HOBOS_sites)) {
+  Dir_SpatConnect <- seq(1:c(ncol(HOBOS_sites[[river]])-1))
+  netw_struct_matrix <- matrix(nrow =length(Dir_SpatConnect),ncol = length(Dir_SpatConnect),0)
+  for (site_step in 1:length(Dir_SpatConnect)-1) {
+    netw_struct_matrix[Dir_SpatConnect[site_step],Dir_SpatConnect[site_step]+1] <- 1}
+Dir_netw_struct_matrices[[river]] <- netw_struct_matrix
+}
+
+# For undirected scenarios 
+UNdir_netw_struct_matrices <- list()
+for (river in 1:length(HOBOS_sites)) {
+  Dir_SpatConnect <- seq(1:c(ncol(HOBOS_sites[[river]])-1))
+  netw_struct_matrix <- matrix(nrow =length(Dir_SpatConnect),ncol = length(Dir_SpatConnect),0)
+  for (site_step in 1:length(Dir_SpatConnect)) {
+    netw_struct_matrix[Dir_SpatConnect[site_step],
+                       c(Dir_SpatConnect[1]:length(Dir_SpatConnect))[-site_step]]<- 1}
+UNdir_netw_struct_matrices[[river]] <- netw_struct_matrix
+}
+```
+
 
 # **Calculation of ST indices**
 
 See article Methods section (DOI: LINK) for a precise description of the methodology, the theory behind and also the different setups for each scenarios and the link with organism dispersal capacities. 
 
-Once we have the 3 main objects that we need We can run the function spat_temp_index: *(1) HOBOS_dataset, (2) Sites_coordinates, (3) dist_matrices* but we still to need to define other features that depend on the different scenarios that we one to test. Spatial and Temporal links are given the same punctuations for all the scenarios. All these three objects must be in "list()" format to allow for the treatment of more than one stream at the same time. 
+Once we have the 4 main objects that we need we can run the function spat_temp_index: *(1) Inermitence_dataset, (2) Sites_coordinates, (3) dist_matrices, (4) Network structure* but we still need to define other features that depend on the different scenarios that we want to test. All these four objects must be in "list()" format to allow for the treatment of more than one stream at the same time. 
 
-1. _Scenario A1 - Binnary directed stream_: Scenario considering a directed network (upstream-downstream direction; _direction="directed"_) and ponderating the "links" as "1"( _value_S_LINK=1 & value_T_LINK=1_ ) and the "no links" as "0"( _value_NO_S_link=0 & value_NO_T_link=0_ ). Therefore, evaluating the connectivity ( _weighting=FALSE_ ) of each monitored site according to water absence/presence following stream flow direction.
+### Function spat_temp_index elements to consider before running it:
+*LINK and NO-LINK values:* The meaning of a "LINK" (Input matrix value= 1) or a "NO-LINK" (Input matrix value= 0) can be modified inside the function according to the different interpretations that one once to give to the values (e.g. do we want to quantify connectivity? dispersal resistance?).
 
-2. _Scenario A2 - Weighted directed stream_: Scenario considering a directed network (upstream-downstream direction; _direction="directed"_), ponderating the "links" as "0.1"( _value_S_LINK=0.1 & value_T_LINK=0.1_ ) and the "no links" as "1"( _value_NO_S_link=1 & value_NO_T_link=1_ ) and weighting them according to euclidean distance between each pair of sites ( _weighting=TRUE_ & _dist_matrices = eucl_dist_matrices_ ). Therefore, evaluating the dispersal resistance of each monitored site according to water absence/presence and distance between sites (when dry, sites are considered further) following stream flow direction.
+*Direction:*direction can be either "directed" or "undirected". This feature will modify the way the graph is being controlled. 
 
-3. _Scenario B1 - Binnary undirected stream_: Scenario considering an undirected network (all nodes can be reached; _direction="undirected"_) and ponderating the "links" as "1"( _value_S_LINK=1 & value_T_LINK=1_ ) and the "no links" as "0"( _value_NO_S_link=0 & value_NO_T_link=0_ ). Therefore, evaluating the connectivity ( _weighting=FALSE_ ) of each monitored site according to water absence/presence without considering any direction.
+*Sense:* this is referring to the direction that will be considered for the graph connectivity considered. Specially for centrality metrics. It can be either "in", "out", "all". See ?igraph or ?igraph::closeness for a better understanding. In summary, when considering "out" sense we are only taking into account the "connection leaving" the site (source effect), when considering "in" sense we consider the connectivity entering each site (sink effect), and with "all" sense we consider everyting. The direction and sense can be combined in order to precisely define how connectivity is being understood. 
 
-4. _Scenario B2 - Weighted undirected stream_: Scenario considering a undirected network (all nodes can be reached; _direction="undirected"_), ponderating the "links" as "0.1"( _value_S_LINK=0.1 & value_T_LINK=0.1_ ) and the "no links" as "1"( _value_NO_S_link=1 & value_NO_T_link=1_ ) and weighting them according to euclidean distance between each pair of sites ( _weighting=TRUE_ & _dist_matrices = eucl_dist_matrices_ ). Therefore, evaluating the dispersal resistance of each monitored site according to water absence/presence and distance between sites (when dry, sites are considered further) without considering any direction.
+*Weighting:* weighting either FALSE or TRUE. The value of the weight is defined by the matrix added (must be in a distance matrix format) and  can consider any type of distance between pairs of monitored sites (euclidean, environmental, topographic, ...). The *dist_matrices* (alreday created in this example, see section 3) is mandatory when WEIGHTING=TRUE.  
 
-## _Scenario A1 - Binnary directed stream_
+*Network_structure:* Already created (see section 4). It is a matrix that corresponds to the "basic" connections that can be possible. An adjacency matrix where all sites are connected among them. Should be equivalent to the network that you would expect from a "fully" connected network. 
+
+*weighting_links=FALSE & link_weights:* If instead of using the values used as "LINKS/NO-LINKS" we want to use specific data wuantifying for every time unit the connections "strength" between sites (e.g. flow data, wind strength, etcetera) we must activate these two elements. This information can be incorporated by selecting weighting_links=TRUE and then providing a list of data.frames with exactly the same information as the *Intermitence_dataset*, having the same amount of rows and columns (e.g. daily flow data in each site).
+
+*LINKS / NO-LINKS:* The *value_LINK* is the value attributed for each "effective link", which is a connection between two nodes (a line). The value_S_LINK for spatial links and the value_T_LINK for temporal links. The *value_NO_link* is the value for each "effective disconnection", which is a "connection void" between two sites (a white space). The value_NO_S_LINK for spatial links and the value_NO_T_LINK for temporal links.
+
+*Legacy effects & Legacy lenght:*Legacy effects are a way to quantify spatiotemporal connectivity during several time units all together. This means that we can quantify temporal links for more than 1 time unit and modify the weight or relevance that each time unit has. 
+For example: 
+- Legacy lenght defines the "number" of time units considered. By default it is set to 1 which means that the function will consider only 1 time unit (the connectivity of time T1 will only be considered for T2). If value is set at legacy lenght=3 the connectivity of T1 will be considered for T2, T3, and T4 (the connections present at T1 will be also considered for the 3 following T).
+- Legacy effect defines the weight given to the LINK / NO-LINK values for each time unit. It is a vector with values ranging from 0 to 1 that will modulate the relevance of a connection through time. 
+
+*Ploting and other elements of the function:* 
+- Virid_option defines which palette the user wants to use for the plots ("A","B","C",...) from the viridis package (see ?viridis for more information). If not specified the default is set to the "viridis" colour palette  
+- Network_variables=F activates the calculation of centrality metrics for each network for each analysed day. These metrics include closennes, outclosennes and betweenness. They will be included in the output as a data.frame with the values for each site (colums) for each day (rows).
+- print.plots=F defines if we want to directly print the plots or not in a directory (FOR BIG NETWORKS with hundreds of nodes it can be computationally demanding and it can even block the session).
+- print.directory="Figure/" sets the directory where plots will be saved. 
+
+### Finally, we define all these items for each of the four scenarios: 
+
+1. _Scenario DirBin - Binnary directed stream_: Scenario considering a directed network (upstream-downstream direction; _direction="directed"_) and ponderating the "links" as "1"( _value_S_LINK=1 & value_T_LINK=1_ ) and the "no links" as "0"( _value_NO_S_link=0 & value_NO_T_link=0_ ). Therefore, evaluating the connectivity ( _weighting=FALSE_ ) of each monitored site according to water absence/presence following stream flow direction.
+
+2. _Scenario DirWei - Weighted directed stream_: Scenario considering a directed network (upstream-downstream direction; _direction="directed"_), ponderating the "links" as "0.1"( _value_S_LINK=0.1 & value_T_LINK=0.1_ ) and the "no links" as "1"( _value_NO_S_link=1 & value_NO_T_link=1_ ) and weighting them according to euclidean distance between each pair of sites ( _weighting=TRUE_ & _dist_matrices = eucl_dist_matrices_ ). Therefore, evaluating the dispersal resistance of each monitored site according to water absence/presence and distance between sites (when dry, sites are considered further) following stream flow direction.
+
+3. _Scenario UndBin - Binnary undirected stream_: Scenario considering an undirected network (all nodes can be reached; _direction="undirected"_) and ponderating the "links" as "1"( _value_S_LINK=1 & value_T_LINK=1_ ) and the "no links" as "0"( _value_NO_S_link=0 & value_NO_T_link=0_ ). Therefore, evaluating the connectivity ( _weighting=FALSE_ ) of each monitored site according to water absence/presence without considering any direction.
+
+4. _Scenario UndWei - Weighted undirected stream_: Scenario considering an undirected network (all nodes can be reached; _direction="undirected"_), ponderating the "links" as "0.1"( _value_S_LINK=0.1 & value_T_LINK=0.1_ ) and the "no links" as "1"( _value_NO_S_link=1 & value_NO_T_link=1_ ) and weighting them according to euclidean distance between each pair of sites ( _weighting=TRUE_ & _dist_matrices = eucl_dist_matrices_ ). Therefore, evaluating the dispersal resistance of each monitored site according to water absence/presence and distance between sites (when dry, sites are considered further) without considering any direction.
+
+## _Scenario DirBin - Binnary directed stream_
 ```{r binnary_directed, eval=FALSE}
 # Building a directed non weighted network
 # Value of link=1
 # Value of NO link=0
-Dir_NonW_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+Dir_NonW_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="directed", 
-                                weighting=FALSE,
+                                direction="directed", sense = "out",
+                                Network_stru =Dir_netw_struct_matrices,
+                                weighting=FALSE,dist_matrices = NULL,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=1,
                                 value_T_LINK=1,
                                 value_NO_S_link=0,
                                 value_NO_T_link=0,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 ```
 
 
-## _Scenario A2 - Weighted directed stream_
+## _Scenario DirWei - Weighted directed stream_
 ```{r directed weighted, eval=FALSE}
 # Building a directed Weighted network
 # Value of link= 0.1
 # Value of NO link=1
 # - I am evaluationg "resistance" to move from one to another. 
 # SO, higher numbers mean High resistance
-Dir_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+Dir_WEIG_Net <- spat_temp_index(Inermitence_dataset =HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="directed", 
-                                weighting=TRUE,
-                                dist_matrices = eucl_dist_matrices,
+                                direction="directed", sense = "out",
+                                weighting=TRUE, dist_matrices = eucl_dist_matrices,
+                                Network_stru =Dir_netw_struct_matrices,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
-                                value_NO_T_link=1,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                value_NO_T_link=1,Virid_option = "B",
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 ```
 
 
-## _Scenario B1 - Binnary undirected stream_
+## _Scenario UndBin - Binnary undirected stream_
 ```{r undirected binnary, eval=FALSE}
 # Building a Undirected non weighted network
 # Value of link=1
 # Value of NO link=0
-UnD_NonW_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+UnD_NonW_Net <- spat_temp_index(Inermitence_dataset =HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="undirected", 
-                                weighting=FALSE,
+                                direction="undirected", sense = "all",
+                                weighting=FALSE,dist_matrices = NULL,
+                                Network_stru =UNdir_netw_struct_matrices, 
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=1,
                                 value_T_LINK=1,
                                 value_NO_S_link=0,
                                 value_NO_T_link=0,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 ```
 
 
-## _Scenario B2 - Weighted undirected stream_
+## _Scenario UndWei - Weighted undirected stream_
 ```{r wndirected Weighted , eval=FALSE}
 # Building a Undirected Weighted network
 # Value of link= 0.1
 # Value of NO link=1
 # - I am evaluationg "resistance" to move from one to another. 
 # SO, higher numbers mean High resistance
-UnD_WEIG_Net <- spat_temp_index(HOBOS_dataset=HOBOS_sites,
+UnD_WEIG_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
                                 Sites_coordinates=Sites_list,
-                                direction="undirected", 
-                                weighting=TRUE,
-                                dist_matrices = eucl_dist_matrices,
+                                direction="undirected",  sense = "all",
+                                weighting=TRUE, dist_matrices = eucl_dist_matrices,
+                                Network_stru =UNdir_netw_struct_matrices,
+                                weighting_links =FALSE,link_weights = NULL,
+                                legacy_effect =1, legacy_lenght = 1,
                                 value_S_LINK=0.1,
                                 value_T_LINK=0.1,
                                 value_NO_S_link=1,
-                                value_NO_T_link=1,
-                                Network_variables=TRUE,
-                                print.plots=TRUE,
-                                print.directory="Figure/")
+                                value_NO_T_link=1,Virid_option = "B",
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 ```
 
 ### Output treatment for later processing
@@ -277,182 +339,45 @@ For each scenario we retrieve the following indices and values:
 
 Finally, we elavorate a dataframe with each one of these variables as columns to later treat them. 
 
-## _A1 Scenario - Binnary directed stream_
+## _DirBin Scenario - Binnary directed stream_
 ```{r Directed NONWEIGHTED river network OUTPUTS, eval=FALSE}
-# Directed NONWEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-NonW_ST_matrix_out_out <- Dir_NonW_Net$Dir_NonW_ST_matrix
-
-# Spatiotemporal connectivity 
-NonW_ST_connectivity_value <- Dir_NonW_Net$Dir_NonW_ST_con
-
-# Spatiotemporal Out.closenness 
-NonW_ST_directed_Ocloseness_rivers <- Dir_NonW_Net$Dir_NonW_ST_Ocl
-NonW_ST_directed_Oclo_mean <- list()
-NonW_ST_directed_Oclo_sd <- list()
-for (river in 1:length(NonW_ST_directed_Ocloseness_rivers)) {
-  NonW_ST_directed_Oclo_mean[[river]] <- apply(NonW_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  NonW_ST_directed_Oclo_sd[[river]] <- apply(NonW_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-#NonW_ST_oclo_plot
-# Spatiotemporal ALL.closenness 
-NonW_ST_directed_Allcloseness_rivers <- Dir_NonW_Net$Dir_NonW_ST_Acl
-NonW_ST_directed_Allclo_mean <- list()
-NonW_ST_directed_Allclo_sd <- list()
-for (river in 1:length(NonW_ST_directed_Allcloseness_rivers)) {
-  NonW_ST_directed_Allclo_mean[[river]] <- apply(NonW_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  NonW_ST_directed_Allclo_sd[[river]] <- apply(NonW_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-#NonW_ST_Allclo_plot
-# Spatiotemporal Betweenness 
-NonW_ST_directed_betweennes_rivers <- Dir_NonW_Net$Dir_NonW_ST_Bet
-NonW_ST_directed_betw_mean <- list()
-NonW_ST_directed_betw_sd <- list()
-for (river in 1:length(NonW_ST_directed_betweennes_rivers)) {
-  NonW_ST_directed_betw_mean[[river]] <- apply(NonW_ST_directed_betweennes_rivers[[river]],2,mean)
-  NonW_ST_directed_betw_sd[[river]] <- apply(NonW_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-#NonW_ST_betw_plot
-NonW_ST_directed_output <- data.frame(NonW_Dir_con=unlist(NonW_ST_connectivity_value),
-                                      NonW_Dir_Ocl=unlist(NonW_ST_directed_Oclo_mean),
-                                      NonW_Dir_Acl=unlist(NonW_ST_directed_Allclo_mean),
-                                      NonW_Dir_Bet=unlist(NonW_ST_directed_betw_mean))
+# STcon 
+NonW_ST_connectivity_value <- Dir_NonW_Net$STcon
+NonW_ST_directed_output <- data.frame(NonW_Dir_con=unlist(NonW_ST_connectivity_value))
+# STconmat 
+NonW_ST_matrix_out_out <- Dir_NonW_Net$STconmat
 ```
 
 
-## _A2 Scenario - Weighted directed stream_
+## _DirWei Scenario - Weighted directed stream_
 ```{r Directed WEIGHTED river network OUTPUTS, eval=FALSE}
-# Directed WEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-WEIG_ST_matrix_out_out <- Dir_WEIG_Net$Dir_WEIG_ST_matrix
-
-# Spatiotemporal connectivity 
-WEIG_ST_connectivity_value <- Dir_WEIG_Net$Dir_WEIG_ST_con
-
-# Spatiotemporal Out.closenness 
-WEIG_ST_directed_Ocloseness_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Ocl
-WEIG_ST_Oclo_mean <- list()
-WEIG_ST_Oclo_sd <- list()
-for (river in 1:length(WEIG_ST_directed_Ocloseness_rivers)) {
-  WEIG_ST_Oclo_mean[[river]] <- apply(WEIG_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  WEIG_ST_Oclo_sd[[river]] <- apply(WEIG_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal All.closenness 
-WEIG_ST_directed_Allcloseness_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Acl
-WEIG_ST_Allclo_mean <- list()
-WEIG_ST_Allclo_sd <- list()
-for (river in 1:length(WEIG_ST_directed_Allcloseness_rivers)) {
-  WEIG_ST_Allclo_mean[[river]] <- apply(WEIG_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  WEIG_ST_Allclo_sd[[river]] <- apply(WEIG_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-WEIG_ST_directed_betweennes_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Bet
-WEIG_ST_betw_mean <- list()
-WEIG_ST_betw_sd <- list()
-for (river in 1:length(WEIG_ST_directed_betweennes_rivers)) {
-  WEIG_ST_betw_mean[[river]] <- apply(WEIG_ST_directed_betweennes_rivers[[river]],2,mean)
-  WEIG_ST_betw_sd[[river]] <- apply(WEIG_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-WEIG_ST_directed_output <- data.frame(WEIG_Dir_con=unlist(WEIG_ST_connectivity_value),
-                                      WEIG_Dir_Ocl=unlist(WEIG_ST_Oclo_mean),
-                                      WEIG_Dir_Acl=unlist(WEIG_ST_Allclo_mean),
-                                      WEIG_Dir_Bet=unlist(WEIG_ST_betw_mean))
+# STcon
+WEIG_ST_connectivity_value <- Dir_WEIG_Net$STcon
+WEIG_ST_directed_output <- data.frame(WEIG_Dir_con=unlist(WEIG_ST_connectivity_value))
+# STconmat 
+WEIG_ST_matrix_out_out <- Dir_WEIG_Net$STconmat
 ```
 
 
-## _Scenario B1 - Binnary undirected stream_
+## _UndBin Scenario- Binnary undirected stream_
 ```{r Undirected river network OUTPUTS, eval=FALSE}
-# Undirected river network OUTPUTS ####
-# Spatiotemporal matrix 
-Un_NonW_ST_matrix_out_out <- UnD_NonW_Net$UnD_NonW_ST_matrix
-
-# Spatiotemporal matrix 
-Un_NonW_ST_connectivity_value <- UnD_NonW_Net$UnD_NonW_ST_con
-
-# Spatiotemporal All closenness 
-Un_NonW_ST_directed_Ocloseness_rivers <- UnD_NonW_Net$UnD_NonW_ST_Ocl
-Un_NonW_ST_Oclo_mean <- list()
-Un_NonW_ST_Oclo_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_Ocloseness_rivers)) {
-  Un_NonW_ST_Oclo_mean[[river]] <- apply(Un_NonW_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  Un_NonW_ST_Oclo_sd[[river]] <- apply(Un_NonW_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Out closenness 
-Un_NonW_ST_directed_Allcloseness_rivers <- UnD_NonW_Net$UnD_NonW_ST_Acl
-Un_NonW_ST_Allclo_mean <- list()
-Un_NonW_ST_Allclo_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_Allcloseness_rivers)) {
-  Un_NonW_ST_Allclo_mean[[river]] <- apply(Un_NonW_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  Un_NonW_ST_Allclo_sd[[river]] <- apply(Un_NonW_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-Un_NonW_ST_directed_betweennes_rivers <- UnD_NonW_Net$UnD_NonW_ST_Bet
-Un_NonW_ST_betw_mean <- list()
-Un_NonW_ST_betw_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_betweennes_rivers)) {
-  Un_NonW_ST_betw_mean[[river]] <- apply(Un_NonW_ST_directed_betweennes_rivers[[river]],2,mean)
-  Un_NonW_ST_betw_sd[[river]] <- apply(Un_NonW_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-Un_NonW_ST_output <- data.frame(Un_NonW_con=unlist(Un_NonW_ST_connectivity_value),
-                                Un_NonW_Ocl=unlist(Un_NonW_ST_Oclo_mean),
-                                Un_NonW_Acl=unlist(Un_NonW_ST_Allclo_mean),
-                                Un_NonW_Bet=unlist(Un_NonW_ST_betw_mean))
+# STcon 
+Un_NonW_ST_connectivity_value <- UnD_NonW_Net$STcon
+Un_NonW_ST_output <- data.frame(Un_NonW_con=unlist(Un_NonW_ST_connectivity_value))
+# STconmat
+Un_NonW_ST_matrix_out_out <- UnD_NonW_Net$STconmat
 ```
 
 
-## _Scenario B2 - Weighted undirected stream_
+## _UndWei Scenario- Weighted undirected stream_
 ```{r Undirected WEIGHTED river network OUTPUTS, eval=FALSE}
-# Undirected WEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$UnD_WEIG_ST_matrix
-
-# Spatiotemporal matrix 
-Un_WEIG_ST_connectivity_value <- UnD_WEIG_Net$UnD_WEIG_ST_con
-
-# Spatiotemporal All closenness 
-Un_WEIG_ST_directed_Ocloseness_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Ocl
-Un_WEIG_ST_Oclo_mean <- list()
-Un_WEIG_ST_Oclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_Ocloseness_rivers)) {
-  Un_WEIG_ST_Oclo_mean[[river]] <- apply(Un_WEIG_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  Un_WEIG_ST_Oclo_sd[[river]] <- apply(Un_WEIG_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-
-# Spatiotemporal Out closenness 
-Un_WEIG_ST_directed_Allcloseness_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Acl
-Un_WEIG_ST_Allclo_mean <- list()
-Un_WEIG_ST_Allclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_Allcloseness_rivers)) {
-  Un_WEIG_ST_Allclo_mean[[river]] <- apply(Un_WEIG_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  Un_WEIG_ST_Allclo_sd[[river]] <- apply(Un_WEIG_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-Un_WEIG_ST_directed_betweennes_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Bet
-Un_WEIG_ST_Betclo_mean <- list()
-Un_WEIG_ST_Betclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_betweennes_rivers)) {
-  Un_WEIG_ST_Betclo_mean[[river]] <- apply(Un_WEIG_ST_directed_betweennes_rivers[[river]],2,mean)
-  Un_WEIG_ST_Betclo_sd[[river]] <- apply(Un_WEIG_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-Un_WEIG_ST_output <- data.frame(Un_WEIG_con=unlist(Un_WEIG_ST_connectivity_value),
-                                Un_WEIG_Ocl=unlist(Un_WEIG_ST_Oclo_mean),
-                                Un_WEIG_Acl=unlist(Un_WEIG_ST_Allclo_mean),
+# STcon
+Un_WEIG_ST_connectivity_value <- UnD_WEIG_Net$STcon
+Un_WEIG_ST_output <- data.frame(Un_WEIG_con=unlist(Un_WEIG_ST_connectivity_value))
+# STconmat 
+Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$STconmat
                                 Un_WEIG_Bet=unlist(Un_WEIG_ST_Betclo_mean))
-
 ```
-
 
 ### Final step, dataframe edition, Dataloggers ID and Stream direction
 
@@ -548,17 +473,20 @@ Old_HOBOS_comb
 
 Once obtained, we compare them with the STcon indices obtained for the four scenarios studied (PCA analysis-Figure 3) and analyse the correlation among them (Figure S3 ). More information in the article DOI: 
 
-Figure 3: PCA plot for STcon indices for each one of the four scenarios: Directed binary (STcon.A1), Directed Weighted (STcon.A2), Undirected Binary (STcon.B1), Undirected Weighted (STcon.B2) and the previously existing indices for water permanence data: the total duration of drying events (TotDur), the frequency of drying events (TotNum), and the average length of each drying event (TotLeng). All the data is calculated based on the total monitored time window monitored (513 days).
+Figure 3: PCA plot for STcon indices for each one of the four scenarios: Directed binary (DirBin), Directed Weighted (DirWei), Undirected Binary (UndBin), Undirected Weighted (UndWei) and the previously existing indices for water permanence data: the total duration of drying events (TotDur), the frequency of drying events (TotNum), and the average length of each drying event (TotLeng). All the data is calculated based on the total monitored time window monitored (513 days).
 
 ```{r Figure 3, eval=FALSE}
-# Figure 3 
-library(vegan)
-library(ggfortify)
-data_PCA <- data.frame(data.frame("STcon A1"=NonW_ST_directed_out$NonW_Dir_con,
-                                  "STcon A2"=WEIG_ST_directed_out$WEIG_Dir_con,
-                                  "STcon B1"=Un_NonW_ST_out$Un_NonW_con, 
-                                  "STcon B2"=Un_WEIG_ST_out$Un_WEIG_con),
+# Figure 3
+data_PCA <- data.frame(data.frame("DirBin"=NonW_ST_directed_out$NonW_Dir_con,
+                                  "DirWei"=WEIG_ST_directed_out$WEIG_Dir_con,
+                                  "UndBin"=Un_NonW_ST_out$Un_NonW_con, 
+                                  "UndWei"=Un_WEIG_ST_out$Un_WEIG_con),
             Old_HOBOS_comb[,3:5])
+
+
+png(filename =paste("Figure/Data_treat/","Figure3",".png"), 
+    width = 700*2.5, height = 550*2.5, 
+    units = "px",res = 300)
 
 PCA_info <- prcomp(data_PCA,center = T, scale. = T)
 a <- data.frame(
@@ -584,19 +512,20 @@ autoplot(prcomp(data_PCA,
   scale_y_continuous(limits = c(-0.32,0.32))+
   labs(caption = caption_text)+
   theme_bw()
+dev.off()
 ```
  
 ```{r Figure3, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Figure3.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Figure3.png")
 ``` 
  
-Figure S3: Correlation plot among all the indices obtained for the four scenarios and the previously used drought-related metrics. 
+Figure S5: Correlation plot among all the indices obtained for the four scenarios and the previously used drought-related metrics. 
 ```{r Figure S3, eval=FALSE}
-# Figure 3S
-corrmorant::corrmorant(cbind("STcon 1.1."=NonW_ST_directed_out$NonW_Dir_con,
-                             "log(STcon) 1.2."=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
-                             "STcon 2.1"=Un_NonW_ST_out$Un_NonW_con,
-                             "log(STcon) 2.2"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
+# Figure S5
+corrmorant::corrmorant(cbind("DirBin"=NonW_ST_directed_out$NonW_Dir_con,
+                             "log(DirWei)"=log(WEIG_ST_directed_out$WEIG_Dir_con+1),
+                             "STcon UndBin"=Un_NonW_ST_out$Un_NonW_con,
+                             "log(UndWei)"=log(Un_WEIG_ST_out$Un_WEIG_con+1),
                              "log(TotDur)"= log(Old_HOBOS_comb[,3]+1),
                              "log(TotNum)"= log(Old_HOBOS_comb[,4]+1),
                              "log(TotLeng)"= log(Old_HOBOS_comb[,5]+1)),
@@ -604,80 +533,22 @@ corrmorant::corrmorant(cbind("STcon 1.1."=NonW_ST_directed_out$NonW_Dir_con,
 ```
 
 ```{r Figure 3S, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Supplementaries/CorPlot_STcon_OldHOB.png")
-```
-
-### Stream characterization using _STcon_ 
-
-The obtained indices can be used to characterise the river spatiotemporally by ploting their STcon vlaues along the stream direction (Figure S4) for example, wich allows to detect more disconnected sites or the impact of determined sites on the rest of the network (e.g. directed networks). 
-
-For these characterization one can use either the STcon values, Out closennes, All closennes or Betweenness depending on the main aim or the specific feature that has to be targeted.   
-
-```{r Figure S4, eval=FALSE}
-library(gridExtra)
-four_approxim <- list(NonW_ST_directed_out, 
-                      WEIG_ST_directed_out,
-                      Un_NonW_ST_out, 
-                      Un_WEIG_ST_out)
-
-names_approxim <- c("Dir_NonW_ST", 
-                    "Dir_WEIG_ST",
-                    "Un_NonW_ST", 
-                    "Un_WEIG_ST")
-
-for (a in 1:length(four_approxim)) {
-rows_filter <- unlist(c(four_approxim[[a]]%>%
-                          mutate(files=1:nrow(.))%>%
-                          group_by(ID)%>%
-                          mutate(maxim=max(DtoU), value=DtoU/maxim)%>%
-                          filter(value==1)%>%
-                          ungroup()%>%
-                          dplyr::select(files)))
-    
-grid.arrange(
-  ggplot(data = four_approxim[[a]][-rows_filter,])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][-rows_filter,3],color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+ylab("ST Connecticity")+theme_classic()+theme(legend.position="none"),
-  
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,4] ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,4] ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+ylab("ST Out closeness")+theme_classic()+theme(legend.position="none"),
-  
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,5]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,5]  ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+scale_color_CUNILLERA(palette = "LGTBI")+xlab("HOBO relative position Upstream-Downstream")+
-    ylab("ST All closeness")+theme_classic()+theme(legend.position="none"),
-  
-  ggplot(data = four_approxim[[a]])+
-    geom_point(aes(x=DtoU,y=four_approxim[[a]][,6]  ,fill=ID),color="grey30", alpha=0.5, shape=21, size=2)+
-    geom_line(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.3, linetype=2)+
-    geom_smooth(aes(x=DtoU,y=four_approxim[[a]][,6]  ,color=ID),alpha=0.2, method = "lm",se = F)+
-    scale_fill_CUNILLERA(palette = "LGTBI")+scale_color_CUNILLERA(palette = "LGTBI")+
-    xlab("HOBO relative position Upstream-Downstream")+ylab("ST Betwenness")+theme_classic()+theme(legend.position="none"),
-  
-  get_legend(ggplot(NonW_ST_directed_out)+
-               geom_point(aes(x=DtoU,y=four_approxim[[a]][,3],fill=ID),shape=21, size=2)+
-               scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical")),
-  nrow=3 ,ncol=2 ,top=names_approxim[a])
-}
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Supplementaries/CorPlot_STcon_OldHOB.png")
 ```
 
 ### Matrix HOBOS values NMDS building - _STconmat_ and stream characterization using both indices
 
-For each scenario (A1, A2, B1 and B2) we calculate an NMDS using euclidean distances and ploting their values in order to characterize each one of the analysed streams in a bidimensional space.  
+For each scenario (DirBin, DirWei, UndBin and UndWei) we calculate an NMDS using euclidean distances and ploting their values in order to characterize each one of the analysed streams in a bidimensional space.
 
-Finally, we merge the obtained results in a unique figure where the two developed indices are shown. Figur 4 of the article (DOI: LINK) provides a complete image of streams spatiotemporal patterns based on both indices. 
+The obtained indices can be used to characterise the river spatiotemporally by ploting their STcon vlaues along the stream direction for example, wich allows to detect more disconnected sites or the impact of determined sites on the rest of the network (e.g. directed networks). 
 
-```{r Figure 4, eval=FALSE}
-# Figure 4
+Finally, we merge the obtained results in a unique figure where the two developed indices are shown. Figure 4 of the article (DOI: LINK) provides a complete image of streams spatiotemporal patterns based on both indices. 
+
+
+```{r Figure S4, eval=FALSE}
+png(filename =paste("Figure/Data_treat/Figure4.png"), 
+      width = 700*6, height = 650*6, 
+      units = "px",res = 350)
   rows_filter <- unlist(c(four_approxim[[1]]%>%
                             mutate(files=1:nrow(.))%>%
                             group_by(ID)%>%
@@ -687,7 +558,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
                             dplyr::select(files)))
   
   alpha_stream <- as.numeric(unlist(c(four_approxim[[1]]%>%
-                  mutate(alpha_stream=ifelse(ID=="VH", 1, 0.3))%>%
+                  mutate(alpha_stream=ifelse(ID=="VH", 0.8, 0.8))%>%
                   ungroup()%>%
                   dplyr::select(alpha_stream))))
   alpha_HOBOS3 <- c(rep(0,58),1,rep(0,7))
@@ -696,7 +567,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
   #A1 line plot  
   arrangeGrob(
     ggplot(data = four_approxim[[1]][-rows_filter,])+
-      geom_point(aes(x=DtoU,y=four_approxim[[1]][-rows_filter,3]),color="red",alpha=alpha_HOBOS3[-rows_filter], shape=16, size=5,)+
+      #geom_point(aes(x=DtoU,y=four_approxim[[1]][-rows_filter,3]),color="red",alpha=alpha_HOBOS3[-rows_filter], shape=16, size=5,)+
       geom_point(aes(x=DtoU,y=four_approxim[[1]][-rows_filter,3],fill=ID),color="grey30", alpha=alpha_stream[-rows_filter], shape=21, size=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[1]][-rows_filter,3],color=ID),alpha=alpha_stream[-rows_filter], linetype=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[1]][-rows_filter,3],color=ID, alpha=ID), 
@@ -704,7 +575,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_alpha_manual(values = c(rep(0.3,6),0.9))+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "A1 - STcon", title = "A)")+
+      labs(subtitle = "DirBin - STcon", title = "A)")+
       xlab("HOBO relative position Upstream-Downstream")+
       ylab("ST Connecticity")+
       theme_classic()+theme(legend.position="none"),
@@ -718,7 +589,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       stat_ellipse(aes(x=x, y=y, colour=ID),type = "t", linetype=2,size=1, alpha=0.5)+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "A1 - STconmat", title = "B)")+
+      labs(subtitle = "DirBin - STconmat", title = "B)")+
       scale_y_continuous(label=NULL)+
       scale_x_continuous(label=NULL)+
       theme_classic()+theme(legend.position="none",axis.ticks = element_blank())+
@@ -729,7 +600,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
   #A2 line plot  
   arrangeGrob( 
     ggplot(data = four_approxim[[2]][,])+
-      geom_point(aes(x=DtoU,y=four_approxim[[2]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
+      #geom_point(aes(x=DtoU,y=four_approxim[[2]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
       geom_point(aes(x=DtoU,y=four_approxim[[2]][,3],fill=ID),color="grey30", alpha=alpha_stream, shape=21, size=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[2]][,3],color=ID),alpha=alpha_stream, linetype=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[2]][,3],color=ID, alpha=ID), 
@@ -737,7 +608,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_alpha_manual(values = c(rep(0.3,6),0.9))+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "A2 - STcon")+ 
+      labs(subtitle = "DirWei - STcon")+ 
       xlab("HOBO relative position Upstream-Downstream")+
       ylab("ST Connecticity")+
       scale_y_continuous(limits = c(0,15000))+
@@ -753,14 +624,14 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_color_CUNILLERA(palette = "LGTBI")+
       scale_y_continuous(label=NULL)+
       scale_x_continuous(label=NULL)+
-      labs(subtitle = "A2 - STconmat")+
+      labs(subtitle = "DirWei - STconmat")+
       theme_classic()+theme(legend.position="none",axis.ticks = element_blank())+
     facet_grid(. ~ ID), top = ""),
   
   #B1 line plot
   arrangeGrob(
     ggplot(data = four_approxim[[3]][,])+
-      geom_point(aes(x=DtoU,y=four_approxim[[3]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
+      #geom_point(aes(x=DtoU,y=four_approxim[[3]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
       geom_point(aes(x=DtoU,y=four_approxim[[3]][,3],fill=ID),color="grey30", alpha=alpha_stream, shape=21, size=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[3]][,3],color=ID),alpha=alpha_stream, linetype=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[3]][,3],color=ID, alpha=ID), 
@@ -768,7 +639,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_alpha_manual(values = c(rep(0.3,6),0.9))+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "B1 - STcon")+
+      labs(subtitle = "UndBin - STcon")+
       xlab("HOBO relative position Upstream-Downstream")+
       ylab("ST Connecticity")+
       scale_y_continuous(limits = c(0,11.5))+
@@ -782,7 +653,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       stat_ellipse(aes(x=x, y=y, colour=ID),type = "t", linetype=2,size=1, alpha=0.5)+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "B1 - STconmat")+
+      labs(subtitle = "UndBin - STconmat")+
       scale_y_continuous(label=NULL)+
       scale_x_continuous(label=NULL)+
       theme_classic()+theme(legend.position="none",axis.ticks = element_blank())+
@@ -791,7 +662,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
   #B2 line plot  
   arrangeGrob(
     ggplot(data = four_approxim[[4]][,])+
-      geom_point(aes(x=DtoU,y=four_approxim[[4]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
+      #geom_point(aes(x=DtoU,y=four_approxim[[4]][,3]),color="red",alpha=alpha_HOBOS3, shape=16, size=5,)+
       geom_point(aes(x=DtoU,y=four_approxim[[4]][,3],fill=ID),color="grey30", alpha=alpha_stream, shape=21, size=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[4]][,3],color=ID),alpha=alpha_stream, linetype=2)+
       geom_line(aes(x=DtoU,y=four_approxim[[4]][,3],color=ID, alpha=ID), 
@@ -799,10 +670,10 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_alpha_manual(values = c(rep(0.3,6),0.9))+
       scale_fill_CUNILLERA(palette = "LGTBI")+
       scale_color_CUNILLERA(palette = "LGTBI")+
-      labs(subtitle = "B2 - STcon")+
+      labs(subtitle = "UndWei - STcon")+
       xlab("HOBO relative position Upstream-Downstream")+
       ylab("ST Connecticity")+
-      scale_y_continuous(limits = c(0,52000))+
+      scale_y_continuous(limits = c(0,60000))+
       theme_classic()+theme(legend.position="none"),
     top=""),
   
@@ -815,7 +686,7 @@ Finally, we merge the obtained results in a unique figure where the two develope
       scale_color_CUNILLERA(palette = "LGTBI")+
       scale_y_continuous(label=NULL)+
       scale_x_continuous(label=NULL)+
-      labs(subtitle = "B2 - STconmat")+
+      labs(subtitle = "UndWei - STconmat")+
       theme_classic()+theme(legend.position="none",axis.ticks = element_blank())+
       facet_grid(. ~ ID),top = ""),
   
@@ -825,11 +696,13 @@ Finally, we merge the obtained results in a unique figure where the two develope
                  scale_fill_CUNILLERA(palette = "LGTBI", name="Stream ID")+
                  theme_classic()+theme(legend.direction = "horizontal",legend.box="vertical")),
     nrow=5 ,ncol=2,widths=c(0.6,1.1))
+  dev.off()
 ```
 
-```{r Figure4, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Figure4.png")
-``` 
+```{r Figure 4article, echo=FALSE, out.width='100%',  results = 'markup'}
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Figure4.png")
+```
+
 
 # **Comparison with biological data**
 
@@ -930,12 +803,10 @@ BDD_activ <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
 Trait_disp <- Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==3)%>%
   rows_insert(Traits_val_edited%>%dplyr::select(taxon,f1)%>%filter(f1==2))
 BDD_pass <- BDD%>%dplyr::select(Code, Date, Riera,matches(Trait_disp$taxon))
-
 ```
 
 ### Active dispersers community metrics calculated 
 ```{r Active dispersers, eval=FALSE}
-# 2.1 Active dispersers ####
 Data_season <- BDD_activ %>%
                 dplyr::select(-Date,-Riera)%>%
                 pivot_longer(-Code)
@@ -997,7 +868,6 @@ names(Jac.distance) <- unique(table_shannon$Riera[order(table_shannon$Riera)])
 
 BID_output_IND_act <- data.frame(Code=unique(by_group_data_season$Code),rich_f4=data_A_alpha$rich,shan_f4=shan,f4_abun=Trait_abund_f4$f4)
 BID_output_DIST_act <- list(Bray.distance,Jac.distance)
-
 ```
 
 ### Passive dispersers community metrics calculated 
@@ -1063,7 +933,6 @@ names(Jac.distance) <- unique(table_shannon$Riera[order(table_shannon$Riera)])
 
 BID_output_IND_pas <- data.frame(Code=unique(by_group_data_season$Code),rich_f1=data_A_alpha$rich,shan_f1=shan,f1_abun=Trait_abund_f1$f1)
 BID_output_DIST_pas <- list(Bray.distance,Jac.distance)
-
 ```
 
 ### Merging all community metrics calculated 
@@ -1080,8 +949,7 @@ BID_output_DIST <- list("Active"=BID_output_DIST_act,"Passive"=BID_output_DIST_p
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # CHARGING GEOGRAPHIC COORDINATES & MATCHING SAMPLES AND HOBOS ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-
-# We charge the field Samples and filter them according to the ones actually taken (from BDD)  ####
+# 3.1 We charge the field Samples and filter them according to the ones actually taken (from BDD)  ####
 SampSites <- read.table("BiolData/Sites_1.txt",sep = ",",header = T)
 out <- c()
 for (match in 1:length(BDD$Code)) {
@@ -1090,7 +958,7 @@ for (match in 1:length(BDD$Code)) {
 }
 SampSites <- SampSites[out,]
 
-# We call the ST indices to MATCH them  ####
+# 3.2 We call the ST indices to MATCH them  ####
 ## You need to run the previous script in order to built the HOBOS dataset (a list with the HOBOS info for each river)
 Sites_list # They are charged from SpaTemp_HOBOS_treatment.R
 HOBOS_sites# They are charged from SpaTemp_HOBOS_treatment.R
@@ -1105,7 +973,7 @@ ups_dos <- Stream_order$UtoD
 source("FlowIntermittence_indices.R")
 Old_HOBOS_comb
 
-# Geographical matching ####
+# 3.3 Geographical matching ####
 # Converting Sampling SITES to apropriate geog. data 
 str(SampSites)
 a <- c()
@@ -1161,6 +1029,7 @@ HOB_BDD_match$Samp_ID)
 # Order the sites by upstream downstream directionality
 HOB_BDD_match <- HOB_BDD_match%>%arrange(Riera,DtoU)
 
+
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # MERGING ALL THE VALUES TOGETHER ####
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -1179,6 +1048,7 @@ for (riera in 1:length(unique(NonW_ST_matrix_out_out))) {
   names_riera <- unique(Sites_list_comb$ID)
   
   values_places <- unlist(HOB_BDD_match%>%filter(ID==names_riera[riera])%>%dplyr::select(DtoU))
+  print(values_places)
   
   NonW_Dir[[riera]] <- as.dist(t(NonW_ST_matrix_out_out[[riera]][values_places,values_places]))
   WEIG_Dir[[riera]] <- as.dist(t(WEIG_ST_matrix_out_out[[riera]][values_places,values_places]))
@@ -1264,14 +1134,19 @@ plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=
     geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
     geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
     geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+    #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
     scale_fill_manual(values =  CunilleraPAL_corrected)+
     scale_color_manual(values =  CunilleraPAL_corrected)+
-    xlab(paste("log(STcon)"))+
+    xlab(paste(axisXtitles[col_var]))+
     ylab(paste("log(Richness)"))+
     labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
     labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
     theme_classic()+
-    theme(legend.position="none")
+    theme(legend.position="none",
+          axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+          axis.text.x = element_text(color =axistextcolours[col_var] ),
+          axis.title.x = element_text(color =axistextcolours[col_var] , size=8 ))
+    #facet_grid(.~ID)  
   }
 }
 
@@ -1287,17 +1162,21 @@ legend_plots<- get_legend(ggplot(dataset)+
                             scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
+
+png(filename ="Figure/Biol_treat/Richness.png", 
+    width = 1250*4, height = 1000*2, 
+    units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
   nrow=2,ncol=5, top="Richness")
-
+dev.off()
 plots_HOB_BDD_total[[1]] <- plots_HOB_BDD
 ```
 
 ```{r Figure Richness, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Resultats_BID/Richness.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Resultats_BID/Richness.png")
 ``` 
 
 ### Shannon-Wiener
@@ -1350,14 +1229,19 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STcon)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("log(Shannon)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8  ))
+    #facet_grid(.~ID)  
   }
 }
 
@@ -1373,18 +1257,22 @@ legend_plots<- get_legend(ggplot(dataset)+
                             scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
+
+png(filename ="Figure/Biol_treat/Shannon.png", 
+    width = 1250*4, height = 1000*2, 
+    units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
   nrow=2,ncol=5, top="Shannon")
+dev.off()
 
 plots_HOB_BDD_total[[2]] <- plots_HOB_BDD
-
 ```
 
 ```{r Figure Shannon, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Resultats_BID/Shannon.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Resultats_BID/Shannon.png")
 ``` 
 
 ### Trait abundance
@@ -1437,14 +1325,19 @@ for (col_var in 1:ncol(HOB_BDD_match%>%dplyr::select(-Riera, -Codi_HOBO,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STcon)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("log(Trait abundance)"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8  ))
+    #facet_grid(.~ID)  
   }
 }
 
@@ -1460,17 +1353,22 @@ legend_plots<- get_legend(ggplot(dataset)+
                             scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
+
+png(filename ="Figure/Biol_treat/TraitAbun.png", 
+    width = 1250*4, height = 1000*2, 
+    units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
   nrow=2,ncol=5, top="Trait abundance")
+dev.off()
 
 plots_HOB_BDD_total[[3]] <- plots_HOB_BDD
 ```
 
 ```{r Figure TratiAbun, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Resultats_BID/TraitAbun.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Resultats_BID/TraitAbun.png")
 ``` 
 
 ### Matching Bray & Jaccard with STconmat values
@@ -1496,6 +1394,11 @@ for (lis_elem in 1:length(HOB_BDD_match_matrix)) {
 colnames(output)[1] <- "ID"
 
 STmatrix_BiolDissim <- output
+
+axisXtitles <- c(c("Isolated   <-- log(STconmat) -->  Connected"), 
+                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"),
+                 c("Isolated   <-- log(STconmat) -->  Connected"), 
+                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"))
 ```
 
 ### Bray-Curtis simmilarity
@@ -1541,14 +1444,19 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
       geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
       geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
       geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
+      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STconmat)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("Bray curtis"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var] , size=8 ))
+    #facet_grid(.~ID)  
   }
 }
 
@@ -1564,26 +1472,33 @@ legend_plots<- get_legend(ggplot(dataset)+
                             scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
+png(filename ="Figure/Biol_treat/BrayCurtis.png", 
+    width = 1250*4, height = 1000*2, 
+    units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
   nrow=2,ncol=5, top="Bray Crutis")
+dev.off()
 
 plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 ```
 
 ```{r Figure BrayCurtis, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Resultats_BID/BrayCurtis.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Resultats_BID/BrayCurtis.png")
 ``` 
 
 ### Jaccard
 ```{r Jaccard, eval=FALSE}
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
+
+
 for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                     -BrayCurtis_Act, -Jaccard_Act,
                                                     -BrayCurtis_Pas, -Jaccard_Pas))){
+  
   
   variable_x_temp <- STmatrix_BiolDissim%>%dplyr::select(-ID,
                                                   -BrayCurtis_Act, -Jaccard_Act,
@@ -1624,12 +1539,15 @@ for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
       #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
       scale_fill_manual(values =  CunilleraPAL_corrected)+
       scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste("log(STconmat)"))+
+      xlab(paste(axisXtitles[col_var]))+
       ylab(paste("Jaccard"))+
       labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
       labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
       theme_classic()+
-      theme(legend.position="none")
+      theme(legend.position="none",
+            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
+            axis.text.x = element_text(color =axistextcolours[col_var] ),
+            axis.title.x = element_text(color =axistextcolours[col_var], size=8 ))
     #facet_grid(.~ID)  
   }
 }
@@ -1647,17 +1565,20 @@ legend_plots<- get_legend(ggplot(dataset)+
                             scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
                             theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
+png(filename ="Figure/Biol_treat/Jaccard.png", 
+    width = 1250*4, height = 1000*2, 
+    units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
   legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
   nrow=2,ncol=5, top="Jaccard")
-
+dev.off()
 plots_HOB_BDD_total[[5]] <- plots_HOB_BDD
 ```
 
 ```{r Figure Jaccard, echo=FALSE, out.width='100%',  results = 'markup'}
-knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/Figures/Resultats_BID/Jaccard.png")
+knitr::include_graphics("C:/Users/David CM/Dropbox/DAVID DOC/LLAM al DIA/1. FEHM coses al DIA/4. Mecodispers Spa-Tem/1. MS_SpT/2. MS_major MEE/Figures/Resultats_BID/Jaccard.png")
 ``` 
 
 # **Session information**

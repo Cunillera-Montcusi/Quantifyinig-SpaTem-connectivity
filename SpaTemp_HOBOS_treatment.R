@@ -144,7 +144,7 @@ Dir_NonW_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
                                 value_T_LINK=1,
                                 value_NO_S_link=0,
                                 value_NO_T_link=0,
-                                Network_variables=F,print.plots=F,print.directory="")
+                                Network_variables=F,print.plots=F,print.directory="Figure/")
 
 # Building a directed Weighted network
 # Value of link= 0.1
@@ -203,165 +203,33 @@ UnD_WEIG_Net <- spat_temp_index(Inermitence_dataset = HOBOS_sites,
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 # 5.1. Directed NONWEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-NonW_ST_matrix_out_out <- Dir_NonW_Net$Dir_NonW_ST_matrix
-
-# Spatiotemporal connectivity 
-NonW_ST_connectivity_value <- Dir_NonW_Net$Dir_NonW_ST_con
-
-# Spatiotemporal Out.closenness 
-NonW_ST_directed_Ocloseness_rivers <- Dir_NonW_Net$Dir_NonW_ST_Ocl
-NonW_ST_directed_Oclo_mean <- list()
-NonW_ST_directed_Oclo_sd <- list()
-for (river in 1:length(NonW_ST_directed_Ocloseness_rivers)) {
-  NonW_ST_directed_Oclo_mean[[river]] <- apply(NonW_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  NonW_ST_directed_Oclo_sd[[river]] <- apply(NonW_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal ALL.closenness 
-NonW_ST_directed_Allcloseness_rivers <- Dir_NonW_Net$Dir_NonW_ST_Acl
-NonW_ST_directed_Allclo_mean <- list()
-NonW_ST_directed_Allclo_sd <- list()
-for (river in 1:length(NonW_ST_directed_Allcloseness_rivers)) {
-  NonW_ST_directed_Allclo_mean[[river]] <- apply(NonW_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  NonW_ST_directed_Allclo_sd[[river]] <- apply(NonW_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-NonW_ST_directed_betweennes_rivers <- Dir_NonW_Net$Dir_NonW_ST_Bet
-NonW_ST_directed_betw_mean <- list()
-NonW_ST_directed_betw_sd <- list()
-for (river in 1:length(NonW_ST_directed_betweennes_rivers)) {
-  NonW_ST_directed_betw_mean[[river]] <- apply(NonW_ST_directed_betweennes_rivers[[river]],2,mean)
-  NonW_ST_directed_betw_sd[[river]] <- apply(NonW_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-#NonW_ST_betw_plot
-NonW_ST_directed_output <- data.frame(NonW_Dir_con=unlist(NonW_ST_connectivity_value),
-                                      NonW_Dir_Ocl=unlist(NonW_ST_directed_Oclo_mean),
-                                      NonW_Dir_Acl=unlist(NonW_ST_directed_Allclo_mean),
-                                      NonW_Dir_Bet=unlist(NonW_ST_directed_betw_mean))
+# STcon 
+NonW_ST_connectivity_value <- Dir_NonW_Net$STcon
+NonW_ST_directed_output <- data.frame(NonW_Dir_con=unlist(NonW_ST_connectivity_value))
+# STconmat 
+NonW_ST_matrix_out_out <- Dir_NonW_Net$STconmat
 
 
 # 5.2. Directed WEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-WEIG_ST_matrix_out_out <- Dir_WEIG_Net$Dir_WEIG_ST_matrix
-
-# Spatiotemporal connectivity 
-WEIG_ST_connectivity_value <- Dir_WEIG_Net$Dir_WEIG_ST_con
-
-# Spatiotemporal Out.closenness 
-WEIG_ST_directed_Ocloseness_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Ocl
-WEIG_ST_Oclo_mean <- list()
-WEIG_ST_Oclo_sd <- list()
-for (river in 1:length(WEIG_ST_directed_Ocloseness_rivers)) {
-  WEIG_ST_Oclo_mean[[river]] <- apply(WEIG_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  WEIG_ST_Oclo_sd[[river]] <- apply(WEIG_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal All.closenness 
-WEIG_ST_directed_Allcloseness_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Acl
-WEIG_ST_Allclo_mean <- list()
-WEIG_ST_Allclo_sd <- list()
-for (river in 1:length(WEIG_ST_directed_Allcloseness_rivers)) {
-  WEIG_ST_Allclo_mean[[river]] <- apply(WEIG_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  WEIG_ST_Allclo_sd[[river]] <- apply(WEIG_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-WEIG_ST_directed_betweennes_rivers <- Dir_WEIG_Net$Dir_WEIG_ST_Bet
-WEIG_ST_betw_mean <- list()
-WEIG_ST_betw_sd <- list()
-for (river in 1:length(WEIG_ST_directed_betweennes_rivers)) {
-  WEIG_ST_betw_mean[[river]] <- apply(WEIG_ST_directed_betweennes_rivers[[river]],2,mean)
-  WEIG_ST_betw_sd[[river]] <- apply(WEIG_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-WEIG_ST_directed_output <- data.frame(WEIG_Dir_con=unlist(WEIG_ST_connectivity_value),
-                                      WEIG_Dir_Ocl=unlist(WEIG_ST_Oclo_mean),
-                                      WEIG_Dir_Acl=unlist(WEIG_ST_Allclo_mean),
-                                      WEIG_Dir_Bet=unlist(WEIG_ST_betw_mean))
+# STcon
+WEIG_ST_connectivity_value <- Dir_WEIG_Net$STcon
+WEIG_ST_directed_output <- data.frame(WEIG_Dir_con=unlist(WEIG_ST_connectivity_value))
+# STconmat 
+WEIG_ST_matrix_out_out <- Dir_WEIG_Net$STconmat
 
 # 5.3. Undirected river network OUTPUTS ####
-# Spatiotemporal matrix 
-Un_NonW_ST_matrix_out_out <- UnD_NonW_Net$UnD_NonW_ST_matrix
-
-# Spatiotemporal matrix 
-Un_NonW_ST_connectivity_value <- UnD_NonW_Net$UnD_NonW_ST_con
-
-# Spatiotemporal All closenness 
-Un_NonW_ST_directed_Ocloseness_rivers <- UnD_NonW_Net$UnD_NonW_ST_Ocl
-Un_NonW_ST_Oclo_mean <- list()
-Un_NonW_ST_Oclo_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_Ocloseness_rivers)) {
-  Un_NonW_ST_Oclo_mean[[river]] <- apply(Un_NonW_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  Un_NonW_ST_Oclo_sd[[river]] <- apply(Un_NonW_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Out closenness 
-Un_NonW_ST_directed_Allcloseness_rivers <- UnD_NonW_Net$UnD_NonW_ST_Acl
-Un_NonW_ST_Allclo_mean <- list()
-Un_NonW_ST_Allclo_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_Allcloseness_rivers)) {
-  Un_NonW_ST_Allclo_mean[[river]] <- apply(Un_NonW_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  Un_NonW_ST_Allclo_sd[[river]] <- apply(Un_NonW_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-Un_NonW_ST_directed_betweennes_rivers <- UnD_NonW_Net$UnD_NonW_ST_Bet
-Un_NonW_ST_betw_mean <- list()
-Un_NonW_ST_betw_sd <- list()
-for (river in 1:length(Un_NonW_ST_directed_betweennes_rivers)) {
-  Un_NonW_ST_betw_mean[[river]] <- apply(Un_NonW_ST_directed_betweennes_rivers[[river]],2,mean)
-  Un_NonW_ST_betw_sd[[river]] <- apply(Un_NonW_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-Un_NonW_ST_output <- data.frame(Un_NonW_con=unlist(Un_NonW_ST_connectivity_value),
-                                Un_NonW_Ocl=unlist(Un_NonW_ST_Oclo_mean),
-                                Un_NonW_Acl=unlist(Un_NonW_ST_Allclo_mean),
-                                Un_NonW_Bet=unlist(Un_NonW_ST_betw_mean))
+# STcon 
+Un_NonW_ST_connectivity_value <- UnD_NonW_Net$STcon
+Un_NonW_ST_output <- data.frame(Un_NonW_con=unlist(Un_NonW_ST_connectivity_value))
+# STconmat
+Un_NonW_ST_matrix_out_out <- UnD_NonW_Net$STconmat
 
 # 5.4 Undirected WEIGHTED river network OUTPUTS ####
-# Spatiotemporal matrix 
-Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$UnD_WEIG_ST_matrix
-
-# Spatiotemporal matrix 
-Un_WEIG_ST_connectivity_value <- UnD_WEIG_Net$UnD_WEIG_ST_con
-
-# Spatiotemporal All closenness 
-Un_WEIG_ST_directed_Ocloseness_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Ocl
-Un_WEIG_ST_Oclo_mean <- list()
-Un_WEIG_ST_Oclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_Ocloseness_rivers)) {
-  Un_WEIG_ST_Oclo_mean[[river]] <- apply(Un_WEIG_ST_directed_Ocloseness_rivers[[river]],2,mean)
-  Un_WEIG_ST_Oclo_sd[[river]] <- apply(Un_WEIG_ST_directed_Ocloseness_rivers[[river]],2,sd)
-}
-
-
-# Spatiotemporal Out closenness 
-Un_WEIG_ST_directed_Allcloseness_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Acl
-Un_WEIG_ST_Allclo_mean <- list()
-Un_WEIG_ST_Allclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_Allcloseness_rivers)) {
-  Un_WEIG_ST_Allclo_mean[[river]] <- apply(Un_WEIG_ST_directed_Allcloseness_rivers[[river]],2,mean)
-  Un_WEIG_ST_Allclo_sd[[river]] <- apply(Un_WEIG_ST_directed_Allcloseness_rivers[[river]],2,sd)
-}
-
-# Spatiotemporal Betweenness 
-Un_WEIG_ST_directed_betweennes_rivers <- UnD_WEIG_Net$UnD_WEIG_ST_Bet
-Un_WEIG_ST_Betclo_mean <- list()
-Un_WEIG_ST_Betclo_sd <- list()
-for (river in 1:length(Un_WEIG_ST_directed_betweennes_rivers)) {
-  Un_WEIG_ST_Betclo_mean[[river]] <- apply(Un_WEIG_ST_directed_betweennes_rivers[[river]],2,mean)
-  Un_WEIG_ST_Betclo_sd[[river]] <- apply(Un_WEIG_ST_directed_betweennes_rivers[[river]],2,sd)
-}
-
-Un_WEIG_ST_output <- data.frame(Un_WEIG_con=unlist(Un_WEIG_ST_connectivity_value),
-                                Un_WEIG_Ocl=unlist(Un_WEIG_ST_Oclo_mean),
-                                Un_WEIG_Acl=unlist(Un_WEIG_ST_Allclo_mean),
-                                Un_WEIG_Bet=unlist(Un_WEIG_ST_Betclo_mean))
-
-
+# STcon
+Un_WEIG_ST_connectivity_value <- UnD_WEIG_Net$STcon
+Un_WEIG_ST_output <- data.frame(Un_WEIG_con=unlist(Un_WEIG_ST_connectivity_value))
+# STconmat 
+Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$STconmat
 
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
