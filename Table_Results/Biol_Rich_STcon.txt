@@ -1,17 +1,17 @@
 "Scenario","Dispersion","Fixed effects","Value","Std.Error","DF","t-value","p-value"
-"1","Scenario A1","Active","Intercept",2.365,0.306,17,7.718,0
-"2","Scenario A1","Active","STconmat",-0.191,0.314,17,-0.607,0.552
-"3","Scenario A2","Active","Intercept",2.517,0.294,17,8.555,0
-"4","Scenario A2","Active","STconmat",-0.049,0.03,17,-1.618,0.124
-"5","Scenario B1","Active","Intercept",0.834,0.584,17,1.428,0.172
-"6","Scenario B1","Active","STconmat",0.781,0.308,17,2.538,0.021
-"7","Scenario B2","Active","Intercept",0.788,2.35,17,0.335,0.742
-"8","Scenario B2","Active","STconmat",0.157,0.248,17,0.631,0.537
-"9","Scenario A1","Passive","Intercept",2.654,0.218,17,12.178,0
-"10","Scenario A1","Passive","STconmat",-0.115,0.21,17,-0.545,0.593
-"11","Scenario A2","Passive","Intercept",2.855,0.207,17,13.767,0
-"12","Scenario A2","Passive","STconmat",-0.05,0.018,17,-2.832,0.011
-"13","Scenario B1","Passive","Intercept",1.518,0.397,17,3.82,0.001
-"14","Scenario B1","Passive","STconmat",0.588,0.209,17,2.809,0.012
-"15","Scenario B2","Passive","Intercept",0.426,1.648,17,0.259,0.799
-"16","Scenario B2","Passive","STconmat",0.23,0.174,17,1.324,0.203
+"1","DirBin","Active","Intercept",2.365,0.306,17,7.718,0
+"2","DirBin","Active","STconmat",-0.191,0.314,17,-0.607,0.552
+"3","DirWei","Active","Intercept",2.517,0.294,17,8.555,0
+"4","DirWei","Active","STconmat",-0.049,0.03,17,-1.618,0.124
+"5","UndBin","Active","Intercept",0.834,0.584,17,1.428,0.172
+"6","UndBin","Active","STconmat",0.781,0.308,17,2.538,0.021
+"7","UndWei","Active","Intercept",0.788,2.35,17,0.335,0.742
+"8","UndWei","Active","STconmat",0.157,0.248,17,0.631,0.537
+"9","DirBin","Passive","Intercept",2.654,0.218,17,12.178,0
+"10","DirBin","Passive","STconmat",-0.115,0.21,17,-0.545,0.593
+"11","DirWei","Passive","Intercept",2.855,0.207,17,13.767,0
+"12","DirWei","Passive","STconmat",-0.05,0.018,17,-2.832,0.011
+"13","UndBin","Passive","Intercept",1.518,0.397,17,3.82,0.001
+"14","UndBin","Passive","STconmat",0.588,0.209,17,2.809,0.012
+"15","UndWei","Passive","Intercept",0.426,1.648,17,0.259,0.799
+"16","UndWei","Passive","STconmat",0.23,0.174,17,1.324,0.203
