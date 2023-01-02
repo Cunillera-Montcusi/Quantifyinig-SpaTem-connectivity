@@ -337,6 +337,7 @@ for (riera in 1:length(unique(NonW_ST_matrix_out_out))) {
   names_riera <- unique(Sites_list_comb$ID)
   
   values_places <- unlist(HOB_BDD_match%>%filter(ID==names_riera[riera])%>%dplyr::select(DtoU))
+  print(values_places)
   
   NonW_Dir[[riera]] <- as.dist(t(NonW_ST_matrix_out_out[[riera]][values_places,values_places]))
   WEIG_Dir[[riera]] <- as.dist(t(WEIG_ST_matrix_out_out[[riera]][values_places,values_places]))
