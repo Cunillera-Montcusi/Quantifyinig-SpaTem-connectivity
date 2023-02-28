@@ -40,7 +40,7 @@ for (sit in 1:length(HOBOS_sites)) {
   names_hobos <- colnames(HOBOS_sites[[sit]])[2:length(colnames(HOBOS_sites[[sit]]))]
   local_hobos <- c()
   Sites_list[[sit]] <- Sites%>%filter(Codi_HOBO%in%names_hobos)%>%
-                               left_join(Stream_order, by="Codi_HOBO")%>%
+                               left_join(Stream_order, by=c("Codi_HOBO","Riera"))%>%
                                arrange(UtoD)%>%
                                dplyr::select(Riera,Codi_HOBO,Longitud,Latitud)
 #plot(Sites_list[[sit]]$Longitud, Sites_list[[sit]]$Latitud)
@@ -239,22 +239,22 @@ Un_WEIG_ST_matrix_out_out <- UnD_WEIG_Net$STconmat
 # We retrieve this information from the "Stream_order" dataset where each HOBO code, Stram and its position on the 
 #upstream downstream direction were registered
 # This two following vectors are created for being used in other scripts
-HOB_riv_ID<- Stream_order$ï..Riera
+HOB_riv_ID<- Stream_order$Riera
 ups_dos <- Stream_order$UtoD
 
-NonW_ST_directed_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+NonW_ST_directed_out <- data.frame(ID=Stream_order$Riera,DtoU=Stream_order$UtoD,
                                    NonW_ST_directed_output)%>%
                         mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 
-WEIG_ST_directed_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+WEIG_ST_directed_out <- data.frame(ID=Stream_order$Riera,DtoU=Stream_order$UtoD,
                                    WEIG_ST_directed_output)%>%
                         mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 
-Un_NonW_ST_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+Un_NonW_ST_out <- data.frame(ID=Stream_order$Riera,DtoU=Stream_order$UtoD,
                              Un_NonW_ST_output)%>%
                         mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 
-Un_WEIG_ST_out <- data.frame(ID=Stream_order$ï..Riera,DtoU=Stream_order$UtoD,
+Un_WEIG_ST_out <- data.frame(ID=Stream_order$Riera,DtoU=Stream_order$UtoD,
                              Un_WEIG_ST_output)%>%
                         mutate(ID_UpDo=paste(ID,"_",DtoU,sep = ""))
 

@@ -256,7 +256,7 @@ HOBOS_sites# They are charged from SpaTemp_HOBOS_treatment.R
 # This two other objects are also built in the "SpaTemp_HOBOS_treatment.R" script. They contain the names 
 ## of each river and the order upstream to downstream within it. 
 # They are used to Identify and locate river position between HOBOS and real Samples
-HOB_riv_ID<- Stream_order$ï..Riera
+HOB_riv_ID<- Stream_order$Riera
 ups_dos <- Stream_order$UtoD
 
 # Calculation of OLD HOBOS values to include them in the comparisons. 
@@ -305,7 +305,7 @@ par(mfrow=c(1,1))
 
 # Match the values
 library(RANN) 
-Matching_HOBOS <- nn2(data=Sites_list_comb[,3:4], query = SampSites[,2:3], k=1, radius = 1)[[1]] 
+Matching_HOBOS <- nn2(data=Sites_list_comb[,4:3], query = SampSites[,3:2], k=1, radius = 1)[[1]] 
 
 ### *MANUAL CHECKING ####
 # Here you must make sure that the assignation is correct between Samp_ID, ID, Riera, and DtoU
@@ -686,176 +686,176 @@ colnames(output)[1] <- "ID"
 
 STmatrix_BiolDissim <- output
 
-axisXtitles <- c(c("Isolated   <-- log(STconmat) -->  Connected"), 
-                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"),
-                 c("Isolated   <-- log(STconmat) -->  Connected"), 
-                 c("Low disp. resist <-- log(STconmat) --> High disp. resist"))
+axisXtitles <- c(c("Isolated   <-- STconmat -->  Connected"), 
+                 c("Low disp. resist <-- STconmat --> High disp. resist"),
+                 c("Isolated   <-- STconmat -->  Connected"), 
+                 c("Low disp. resist <-- STconmat --> High disp. resist"))
+
+leng_dist_matrix <- ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[1]]))+
+ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[2]]))+
+ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[3]]))+
+ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[4]]))+
+ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[5]]))+
+ncol(as.matrix(HOB_BDD_match_matrix$BrayCurtis_Act[[6]]))
+
+matrices_total_analyse <- list()
+for (matrices_tot in 1:length(HOB_BDD_match_matrix)) {
+Matrix_Beta <- HOB_BDD_match_matrix[[matrices_tot]]
+full_matrix <- matrix(nrow = leng_dist_matrix,ncol = leng_dist_matrix,data = 0)
+for (matrix_number in 1:length(Matrix_Beta)) {
+ncol_leng <- ncol(as.matrix(Matrix_Beta[[matrix_number]]))
+mac_ncol_leng <- which(apply(full_matrix,2,sum)==0)[ncol_leng]
+min_ncol_leng <- which(apply(full_matrix,2,sum)==0)[1]
+full_matrix[min_ncol_leng:mac_ncol_leng,
+            min_ncol_leng:mac_ncol_leng] <- as.matrix(Matrix_Beta[[matrix_number]])
+}
+zeros <- which(full_matrix==0)
+full_matrix[zeros] <- mean(full_matrix[-zeros])
+matrices_total_analyse[[matrices_tot]] <- full_matrix
+}
+names(matrices_total_analyse) <- names(HOB_BDD_match_matrix)
+
 
 # 5.4.1. Plot Bray ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
-                                                    -BrayCurtis_Act, -Jaccard_Act,
-                                                    -BrayCurtis_Pas, -Jaccard_Pas))){
-  
-  
-  variable_x_temp <- STmatrix_BiolDissim%>%dplyr::select(-ID,
-                                             -BrayCurtis_Act, -Jaccard_Act,
-                                             -BrayCurtis_Pas, -Jaccard_Pas)
+variable_y_name <- c("BrayCurtis_Act","BrayCurtis_Pas")
+Dispersal_group <- c("Active", "Passive")
+# BrayCurtis_Act
+out_results <- data.frame()
+for (stconmat_val in 1:4) {
+a <- vegan::mantel(ydis = as.dist(matrices_total_analyse$BrayCurtis_Act),
+                   xdis = as.dist(matrices_total_analyse[[4+stconmat_val]]),permutations = 1000,method = "spearman")
+results <- data.frame("Group"=Dispersal_group[1],
+                      "Scenario"=names_scenarios[stconmat_val],
+                      "Mantel coefficient"=round(a$statistic,3), "p.value"=round(a$signif,3))
 
-  variable_x_name <- colnames(variable_x_temp)[col_var]
-  variable_x <- variable_x_temp[,col_var]
-  
-  variable_y_temp <- STmatrix_BiolDissim%>%dplyr::select(BrayCurtis_Act,BrayCurtis_Pas)
-  plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
-  
-  for (variable in 1:ncol(variable_y_temp)) {
-    
-    variable_y <- variable_y_temp[,variable]
-    variable_y_model <- unlist(variable_y)
-    variable_y_name <- colnames(variable_y_temp)
-    
-    factors <- STmatrix_BiolDissim%>%dplyr::select(ID)
-    Id_random <- unlist(factors$ID)
-    
-    model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
-    results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
-    #Results table
-    model_table <- round(summary(model)[[20]],3)
-    rownames(model_table) <- c("Intercept", "STconmat")
-    model_table<- rownames_to_column(as.data.frame(model_table))
-    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
-    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
-    dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-    dataset$pred_values <- predict(model)   
-    
-    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
-      geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-      geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
-      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_manual(values =  CunilleraPAL_corrected)+
-      scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste(axisXtitles[col_var]))+
-      ylab(paste("Bray curtis"))+
-      labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
-      theme_classic()+
-      theme(legend.position="none",
-            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
-            axis.text.x = element_text(color =axistextcolours[col_var] ),
-            axis.title.x = element_text(color =axistextcolours[col_var] , size=8 ))
-    #facet_grid(.~ID)  
-  }
+plots_HOB_BDD[[stconmat_val]] <- data.frame(
+"X"=matrices_total_analyse[[4+stconmat_val]][lower.tri(matrices_total_analyse[[4+stconmat_val]])],
+"Y"=matrices_total_analyse$BrayCurtis_Act[lower.tri(matrices_total_analyse$BrayCurtis_Act)]) %>% 
+  ggplot(aes(x=X,y=Y))+
+  geom_point(color="grey20",fill="grey40",alpha=0.8, shape=21, size=2)+
+  geom_smooth(method = "lm", colour="black",alpha=0.1, se = TRUE, linetype=1, linewidth=2)+
+  xlab(paste(axisXtitles[stconmat_val]))+
+  ylab(paste("Bray curtis"))+
+  labs(caption = paste("Mantel coefficient=",results[3],"p.value=",results[4]))+
+  labs(subtitle=paste(names_scenarios[stconmat_val],"vs",variable_y_name[1]))+
+  theme_classic()+
+  theme(legend.position="none",
+        axis.line.x.bottom=element_line(color=axistextcolours[stconmat_val], linewidth=3),
+        axis.text.x = element_text(color =axistextcolours[stconmat_val] ),
+        axis.title.x = element_text(color =axistextcolours[stconmat_val] , size=8 ))
+out_results <- bind_rows(out_results, results)
 }
 
-model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
-                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
-                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
-                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
-colnames(model_result)[[3]] <- "Fixed effects"
-write.table(model_result, "Table_Results/Biol_BrayC_STconmat.txt", sep = ",")
+# BrayCurtis_Pas
+for (stconmat_val in 1:4) {
+a <- vegan::mantel(ydis = as.dist(matrices_total_analyse$BrayCurtis_Pas),
+                   xdis = as.dist((matrices_total_analyse[[4+stconmat_val]])),permutations = 1000,method = "spearman")
+results <- data.frame("Group"=Dispersal_group[2],
+                      "Scenario"=names_scenarios[stconmat_val],
+                      "Mantel coefficient"=round(a$statistic,3), "p.value"=round(a$signif,3))
 
-legend_plots<- get_legend(ggplot(dataset)+
-                            geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
-                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
-                            theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
+plots_HOB_BDD[[stconmat_val+4]] <- data.frame(
+  "X"=(matrices_total_analyse[[4+stconmat_val]][lower.tri(matrices_total_analyse[[4+stconmat_val]])]),
+  "Y"=matrices_total_analyse$BrayCurtis_Pas[lower.tri(matrices_total_analyse$BrayCurtis_Pas)]) %>% 
+  ggplot(aes(x=X,y=Y))+
+  geom_point(color="grey20",fill="grey40",alpha=0.8, shape=21, size=2)+
+  geom_smooth(method = "lm", colour="black",alpha=0.1, se = TRUE, linetype=1, linewidth=2)+
+  xlab(paste(axisXtitles[stconmat_val]))+
+  ylab(paste("Bray curtis"))+
+  labs(caption = paste("Mantel coefficient=",results[3],"p.value=",results[4]))+
+  labs(subtitle=paste(names_scenarios[stconmat_val],"vs",variable_y_name[2]))+
+  theme_classic()+
+  theme(legend.position="none",
+        axis.line.x.bottom=element_line(color=axistextcolours[stconmat_val], linewidth=3),
+        axis.text.x = element_text(color =axistextcolours[stconmat_val] ),
+        axis.title.x = element_text(color =axistextcolours[stconmat_val] , size=8 ))
+out_results <- bind_rows(out_results, results)
+}
+
+model_result <- out_results
+write.table(model_result, "Table_Results/Biol_BrayC_STconmat.txt", sep = ",")
 
 png(filename ="Figure/Biol_treat/BrayCurtis.png", 
     width = 1250*4, height = 1000*2, 
     units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
-  legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
-  nrow=2,ncol=5, top="Bray Crutis")
+  nrow=2,ncol=4, top="Bray Crutis")
 dev.off()
-
 plots_HOB_BDD_total[[4]] <- plots_HOB_BDD
 
 # 5.4.2. Plot Jaccard ####
 plots_HOB_BDD <- list()
 model_HOB_BDD_results <- list()
-
-
-for (col_var in 1:ncol(STmatrix_BiolDissim%>%dplyr::select(-ID,
-                                                    -BrayCurtis_Act, -Jaccard_Act,
-                                                    -BrayCurtis_Pas, -Jaccard_Pas))){
+variable_y_name <- c("Jaccard_Act","Jaccard_Pas")
+Dispersal_group <- c("Active", "Passive")
+# Jaccard_Act
+out_results <- data.frame()
+for (stconmat_val in 1:4) {
+  a <- vegan::mantel(ydis = as.dist(matrices_total_analyse$Jaccard_Act),
+                     xdis = as.dist(matrices_total_analyse[[4+stconmat_val]]),permutations = 1000,method = "spearman")
+  results <- data.frame("Group"=Dispersal_group[1],
+                        "Scenario"=names_scenarios[stconmat_val],
+                        "Mantel coefficient"=round(a$statistic,3), "p.value"=round(a$signif,3))
   
-  
-  variable_x_temp <- STmatrix_BiolDissim%>%dplyr::select(-ID,
-                                                  -BrayCurtis_Act, -Jaccard_Act,
-                                                  -BrayCurtis_Pas, -Jaccard_Pas)
-  
-  variable_x_name <- colnames(variable_x_temp)[col_var]
-  variable_x <- variable_x_temp[,col_var]
-  
-  variable_y_temp <- STmatrix_BiolDissim%>%dplyr::select(Jaccard_Act,Jaccard_Pas)
-  plot_counter <- c(col_var, col_var+ncol(variable_x_temp))
-  
-  Dispersal_group <- c("Active", "Passive")
-  for (variable in 1:ncol(variable_y_temp)) {
-    
-    variable_y <- variable_y_temp[,variable]
-    variable_y_model <- unlist(variable_y)
-    variable_y_name <- colnames(variable_y_temp)
-    
-    factors <- STmatrix_BiolDissim%>%dplyr::select(ID)
-    Id_random <- unlist(factors$ID)
-    
-    model <- lme(variable_y_model~log(variable_x+1), random = ~1|Id_random)
-    results <- round(as.numeric(c(summary(model)[[4]]$fixed, summary(model)[[20]][2,5])),2)
-    #Results table
-    model_table <- round(summary(model)[[20]],3)
-    rownames(model_table) <- c("Intercept", "STconmat")
-    model_table<- rownames_to_column(as.data.frame(model_table))
-    model_table<- cbind(Scenario=names_scenarios[col_var],Dispersion=Dispersal_group[variable],model_table)
-    model_HOB_BDD_results[[plot_counter[variable]]] <- model_table 
-    
-    dataset <- cbind(factors, "X_var"=variable_x, variable_y)
-    dataset$pred_values <- predict(model)   
-    
-    plots_HOB_BDD[[plot_counter[variable]]] <- ggplot(dataset,aes(x=log(X_var+1), y=variable_y,fill=ID,colour=ID))+
-      geom_point(color="grey30", alpha=0.5, shape=21, size=2)+
-      geom_smooth(method = "lm", colour="grey60",alpha=0.1, se = TRUE, linetype=2)+
-      geom_abline(slope =results[2],intercept = results[1], colour="black", size=2)+
-      #geom_smooth(method = "lm",alpha=0.2, se = T, fill="grey50", colour="black", size=2)+
-      scale_fill_manual(values =  CunilleraPAL_corrected)+
-      scale_color_manual(values =  CunilleraPAL_corrected)+
-      xlab(paste(axisXtitles[col_var]))+
-      ylab(paste("Jaccard"))+
-      labs(caption = paste("Intercept=",results[1],"Slope=",results[2],"p-value=",results[3]))+
-      labs(subtitle=paste(names_scenarios[col_var],"vs",variable_y_name[variable]))+
-      theme_classic()+
-      theme(legend.position="none",
-            axis.line.x.bottom=element_line(color=axistextcolours[col_var], size=3),
-            axis.text.x = element_text(color =axistextcolours[col_var] ),
-            axis.title.x = element_text(color =axistextcolours[col_var], size=8 ))
-    #facet_grid(.~ID)  
-  }
+  plots_HOB_BDD[[stconmat_val]] <- data.frame(
+    "X"=matrices_total_analyse[[4+stconmat_val]][lower.tri(matrices_total_analyse[[4+stconmat_val]])],
+    "Y"=matrices_total_analyse$Jaccard_Act[lower.tri(matrices_total_analyse$Jaccard_Act)]) %>% 
+    ggplot(aes(x=X,y=Y))+
+    geom_point(color="grey20",fill="grey40",alpha=0.8, shape=21, size=2)+
+    geom_smooth(method = "lm", colour="black",alpha=0.1, se = TRUE, linetype=1, linewidth=2)+
+    xlab(paste(axisXtitles[stconmat_val]))+
+    ylab(paste("Jaccard"))+
+    labs(caption = paste("Mantel coefficient=",results[3],"p.value=",results[4]))+
+    labs(subtitle=paste(names_scenarios[stconmat_val],"vs",variable_y_name[1]))+
+    theme_classic()+
+    theme(legend.position="none",
+          axis.line.x.bottom=element_line(color=axistextcolours[stconmat_val], linewidth=3),
+          axis.text.x = element_text(color =axistextcolours[stconmat_val] ),
+          axis.title.x = element_text(color =axistextcolours[stconmat_val] , size=8 ))
+  out_results <- bind_rows(out_results, results)
 }
 
-model_result <- rbind(model_HOB_BDD_results[[1]],model_HOB_BDD_results[[2]],
-                      model_HOB_BDD_results[[3]],model_HOB_BDD_results[[4]],
-                      model_HOB_BDD_results[[5]],model_HOB_BDD_results[[6]],
-                      model_HOB_BDD_results[[7]],model_HOB_BDD_results[[8]])
-colnames(model_result)[[3]] <- "Fixed effects"
+# Jaccard_Pas
+for (stconmat_val in 1:4) {
+  a <- vegan::mantel(ydis = as.dist(matrices_total_analyse$Jaccard_Pas),
+                     xdis = as.dist((matrices_total_analyse[[4+stconmat_val]])),permutations = 1000,method = "spearman")
+  results <- data.frame("Group"=Dispersal_group[2],
+                        "Scenario"=names_scenarios[stconmat_val],
+                        "Mantel coefficient"=round(a$statistic,3), "p.value"=round(a$signif,3))
+  
+  plots_HOB_BDD[[stconmat_val+4]] <- data.frame(
+    "X"=(matrices_total_analyse[[4+stconmat_val]][lower.tri(matrices_total_analyse[[4+stconmat_val]])]),
+    "Y"=matrices_total_analyse$Jaccard_Pas[lower.tri(matrices_total_analyse$Jaccard_Pas)]) %>% 
+    ggplot(aes(x=X,y=Y))+
+    geom_point(color="grey20",fill="grey40",alpha=0.8, shape=21, size=2)+
+    geom_smooth(method = "lm", colour="black",alpha=0.1, se = TRUE, linetype=1, linewidth=2)+
+    xlab(paste(axisXtitles[stconmat_val]))+
+    ylab(paste("Jaccard"))+
+    labs(caption = paste("Mantel coefficient=",results[3],"p.value=",results[4]))+
+    labs(subtitle=paste(names_scenarios[stconmat_val],"vs",variable_y_name[2]))+
+    theme_classic()+
+    theme(legend.position="none",
+          axis.line.x.bottom=element_line(color=axistextcolours[stconmat_val], linewidth=3),
+          axis.text.x = element_text(color =axistextcolours[stconmat_val] ),
+          axis.title.x = element_text(color =axistextcolours[stconmat_val] , size=8 ))
+  out_results <- bind_rows(out_results, results)
+}
+
+model_result <- out_results
 write.table(model_result, "Table_Results/Biol_Jacc_STconmat.txt", sep = ",")
-
-
-legend_plots<- get_legend(ggplot(dataset)+
-                            geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
-                            scale_fill_manual(values = CunilleraPAL_corrected, name="Stream ID")+
-                            theme_classic()+theme(legend.direction = "vertical",legend.box="vertical"))
 
 png(filename ="Figure/Biol_treat/Jaccard.png", 
     width = 1250*4, height = 1000*2, 
     units = "px",res = 300) 
 grid.arrange(
   plots_HOB_BDD[[1]],plots_HOB_BDD[[2]],plots_HOB_BDD[[3]],plots_HOB_BDD[[4]],
-  legend_plots,
   plots_HOB_BDD[[5]],plots_HOB_BDD[[6]], plots_HOB_BDD[[7]],plots_HOB_BDD[[8]],
-  nrow=2,ncol=5, top="Jaccard")
+  nrow=2,ncol=4, top="Jaccard")
 dev.off()
 plots_HOB_BDD_total[[5]] <- plots_HOB_BDD
+
 

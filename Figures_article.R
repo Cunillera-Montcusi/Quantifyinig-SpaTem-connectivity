@@ -20,16 +20,16 @@ HOBO3_highlight <- geom_nodes(size=c(0,0,10,rep(0,7)),colour="red",alpha=c(0,0,0
 grid.arrange(
 arrangeGrob(
   arrangeGrob(Dir_NonW_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="A) STcon",subtitle="DirBin")),
-  arrangeGrob(Dir_WEIG_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="DirWein")),
+  arrangeGrob(Dir_WEIG_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="DirWei")),
   arrangeGrob(UnD_NonW_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndBin")),
-  arrangeGrob(UnD_WEIG_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndWein")),
+  arrangeGrob(UnD_WEIG_Net$STcon_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndWei")),
   top=""
 ),
 arrangeGrob(
   arrangeGrob(Dir_NonW_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="B) STconmat",subtitle="DirBin")),
-  arrangeGrob(Dir_WEIG_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="DirWein")),
+  arrangeGrob(Dir_WEIG_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="DirWei")),
   arrangeGrob(UnD_NonW_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndBin")),
-  arrangeGrob(UnD_WEIG_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndWein")),
+  arrangeGrob(UnD_WEIG_Net$STconmat_plo[[site_pl]]+Ste_cha+HOBO3_highlight+ labs(title="",subtitle="UndWei")),
   top=""
 ))
 dev.off()
@@ -240,17 +240,20 @@ plots_BID_sign <- list(# Plots sign richness
                        plots_HOB_BDD_total[[1]][[6]]+labs(title="A) Richness", subtitle = "Scenario DirWei Passive dispersers"),
                        plots_HOB_BDD_total[[1]][[7]]+labs(title="", subtitle = "Scenario UndBin Passive dispersers"),
                        # Shannon
-                       plots_HOB_BDD_total[[2]][[3]]+labs(title="B) Shannon", subtitle = "Scenario UndBin Active dispersers" ),
+                       plots_HOB_BDD_total[[2]][[3]]+labs(title="", subtitle = "Scenario UndBin Active dispersers" ),
+                       plots_HOB_BDD_total[[2]][[6]]+labs(title="B) Shannon", subtitle = "Scenario UndBin Passive dispersers" ),
                        # Trait ab.
                        plots_HOB_BDD_total[[3]][[7]]+labs(title="C) Trait abundance", subtitle = "Scenario UndBin Passive dispersers"),
                        #BrayC
-                       plots_HOB_BDD_total[[4]][[3]]+labs(title="D) Bray-curtis", subtitle = "Scenario UndBin Active dispersers"),
+                       plots_HOB_BDD_total[[4]][[2]]+labs(title="", subtitle = "Scenario DirWei Active dispersers"),
                        plots_HOB_BDD_total[[4]][[4]]+labs(title="", subtitle = "Scenario UndWei Active dispersers"),
+                       plots_HOB_BDD_total[[4]][[2]]+labs(title="D) Bray-curtis", subtitle = "Scenario DirWei Passive dispersers"),
+                       plots_HOB_BDD_total[[4]][[4]]+labs(title="", subtitle = "Scenario UndWei Passive dispersers"),
                        #Jaccard
-                       plots_HOB_BDD_total[[5]][[2]]+labs(title="", subtitle = "Scenario DirWei Active dispersers"),
+                       plots_HOB_BDD_total[[5]][[1]]+labs(title="", subtitle = "Scenario DirBin Active dispersers"),
                        plots_HOB_BDD_total[[5]][[4]]+labs(title="", subtitle = "Scenario UndWei Active dispersers"),
-                       plots_HOB_BDD_total[[5]][[6]]+labs(title="E) Jaccard", subtitle = "Scenario DirWei Passive dispersers"),
-                       plots_HOB_BDD_total[[5]][[8]]+labs(title="", subtitle = "Scenario UndWei Passive dispersers"))
+                       plots_HOB_BDD_total[[5]][[5]]+labs(title="E) Jaccard", subtitle = "Scenario DirBin Passive dispersers"),
+                       plots_HOB_BDD_total[[5]][[7]]+labs(title="", subtitle = "Scenario UndBin Passive dispersers"))
                       
 legend_plots<- get_legend(ggplot(dataset)+
                             geom_point(aes(x=X_var,y=variable_y,fill=ID),shape=21, size=6)+
@@ -271,19 +274,25 @@ grid.arrange(
     ncol=4, top=""), 
   
   arrangeGrob( 
-    plots_BID_sign[[4]],
     plots_BID_sign[[5]],
+    plots_BID_sign[[4]],
     plots_BID_sign[[6]],
-    plots_BID_sign[[7]],
     ncol=4, top=""),
   
   arrangeGrob( 
-    plots_BID_sign[[10]],
-    plots_BID_sign[[11]],
-    plots_BID_sign[[8]],
     plots_BID_sign[[9]],
+    plots_BID_sign[[7]],
+    plots_BID_sign[[10]],
+    plots_BID_sign[[8]],
+    ncol=4, top=""),
+  
+  arrangeGrob( 
+    plots_BID_sign[[13]],
+    plots_BID_sign[[11]],
+    plots_BID_sign[[14]],
+    plots_BID_sign[[12]],
     ncol=4, top=""),
 
-  nrow=3)
+  nrow=4)
 dev.off()
 
