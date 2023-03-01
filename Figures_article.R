@@ -241,7 +241,7 @@ plots_BID_sign <- list(# Plots sign richness
                        plots_HOB_BDD_total[[1]][[7]]+labs(title="", subtitle = "Scenario UndBin Passive dispersers"),
                        # Shannon
                        plots_HOB_BDD_total[[2]][[3]]+labs(title="", subtitle = "Scenario UndBin Active dispersers" ),
-                       plots_HOB_BDD_total[[2]][[6]]+labs(title="B) Shannon", subtitle = "Scenario UndBin Passive dispersers" ),
+                       plots_HOB_BDD_total[[2]][[7]]+labs(title="B) Shannon", subtitle = "Scenario UndBin Passive dispersers" ),
                        # Trait ab.
                        plots_HOB_BDD_total[[3]][[7]]+labs(title="C) Trait abundance", subtitle = "Scenario UndBin Passive dispersers"),
                        #BrayC
