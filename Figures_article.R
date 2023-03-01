@@ -247,8 +247,8 @@ plots_BID_sign <- list(# Plots sign richness
                        #BrayC
                        plots_HOB_BDD_total[[4]][[2]]+labs(title="", subtitle = "Scenario DirWei Active dispersers"),
                        plots_HOB_BDD_total[[4]][[4]]+labs(title="", subtitle = "Scenario UndWei Active dispersers"),
-                       plots_HOB_BDD_total[[4]][[2]]+labs(title="D) Bray-curtis", subtitle = "Scenario DirWei Passive dispersers"),
-                       plots_HOB_BDD_total[[4]][[4]]+labs(title="", subtitle = "Scenario UndWei Passive dispersers"),
+                       plots_HOB_BDD_total[[4]][[6]]+labs(title="D) Bray-curtis", subtitle = "Scenario DirWei Passive dispersers"),
+                       plots_HOB_BDD_total[[4]][[8]]+labs(title="", subtitle = "Scenario UndWei Passive dispersers"),
                        #Jaccard
                        plots_HOB_BDD_total[[5]][[1]]+labs(title="", subtitle = "Scenario DirBin Active dispersers"),
                        plots_HOB_BDD_total[[5]][[4]]+labs(title="", subtitle = "Scenario UndWei Active dispersers"),
