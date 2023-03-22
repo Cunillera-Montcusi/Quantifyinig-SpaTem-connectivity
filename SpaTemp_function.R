@@ -323,9 +323,9 @@ spat_temp_index <- function(Inermitence_dataset,
         ## When "0" site does not correspond to any row... so the "1" does not go anywhere. 
         All_river_paths[every_path,site] <- value_S_LINK
         # We weight the links base on daily information of flow or strength of the link.
-        if(weighting_links==T){All_river_paths[every_path,] <- All_river_paths[every_path,]*as.numeric(day_link_weights[every_path])}
+        if(weighting_links==T){All_river_paths[every_path,] <-  as.numeric(All_river_paths[every_path,]*as.numeric(day_link_weights[every_path]))}
         # We weight the sites for the distances between them (a pairwise matrix)
-        if(weighting==T){All_river_paths[every_path,] <- All_river_paths[every_path,]*dist_matr[every_path,]}
+        if(weighting==T){All_river_paths[every_path,] <-  as.numeric(All_river_paths[every_path,]*dist_matr[every_path,])}
       }
       
       # We add the "All_river_paths" filled for each node in the "big" matrix specific sites
@@ -368,9 +368,9 @@ spat_temp_index <- function(Inermitence_dataset,
             All_river_paths[site_step,site] <- value_T_LINK
             
             # We weight the links base on daily information of flow or strength of the link.
-            if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+            if(weighting_links==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*as.numeric(day_link_weights[site_step]))}
             # We weight
-            if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
+            if(weighting==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*dist_matr[site_step,])}
             
             for (leg_eff in 1:legacy_lenght) {
               All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
@@ -390,9 +390,9 @@ spat_temp_index <- function(Inermitence_dataset,
             }
           }else{# Here we check if the temporal change implies going from 0 to 0 (so a stable disconnected link). Then we put 0
             # We weight the links base on daily information of flow or strength of the link.
-            if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+            if(weighting_links==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*as.numeric(day_link_weights[site_step]))}
             # We weight
-            if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
+            if(weighting==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*dist_matr[site_step,])}
             for (leg_eff in 1:legacy_lenght) {
               All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
               ST_matrix[spa_connections[site_step],
@@ -406,9 +406,9 @@ spat_temp_index <- function(Inermitence_dataset,
         ## This just needs to be filled with zeros... so no need to use "All_river_paths"
         if(temp_change==1){
           # We weight the links base on daily information of flow or strength of the link.
-          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+          if(weighting_links==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*as.numeric(day_link_weights[site_step]))}
           # We weight
-          if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
+          if(weighting==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*dist_matr[site_step,])}
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             ST_matrix[spa_connections[site_step],
@@ -420,9 +420,9 @@ spat_temp_index <- function(Inermitence_dataset,
         ## It is a "gain" but it means that "in the present" (time step 1), the node is still disconnected. So it =0
         if(temp_change==-1){
           # We weight the links base on daily information of flow or strength of the link.
-          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+          if(weighting_links==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*as.numeric(day_link_weights[site_step]))}
           # We weight
-          if(weighting==T){All_river_paths[site_step,] <-All_river_paths[site_step,]*dist_matr[site_step,]}
+          if(weighting==T){All_river_paths[site_step,] <- as.numeric(All_river_paths[site_step,]*dist_matr[site_step,])}
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
             ST_matrix[spa_connections[site_step],
@@ -451,9 +451,9 @@ spat_temp_index <- function(Inermitence_dataset,
           # We fill the sites with the value
           All_river_paths[site_step,site] <- value_T_LINK
           # We weight the links base on daily information of flow or strength of the link.
-          if(weighting_links==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*as.numeric(day_link_weights[site_step])}
+          if(weighting_links==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*as.numeric(day_link_weights[site_step]))}
           # We weight
-          if(weighting==T){All_river_paths[site_step,] <- All_river_paths[site_step,]*dist_matr[site_step,]}
+          if(weighting==T){All_river_paths[site_step,] <-  as.numeric(All_river_paths[site_step,]*dist_matr[site_step,])}
           # We pass it to the main matrix
           for (leg_eff in 1:legacy_lenght) {
             All_river_paths_legacy <- All_river_paths[site_step,]*legacy_effect[leg_eff]
