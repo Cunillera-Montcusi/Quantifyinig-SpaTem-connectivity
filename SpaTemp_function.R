@@ -518,8 +518,8 @@ spat_temp_index <- function(Inermitence_dataset,
     for (edg in 1:c(ncol(Inermitence_dataset[[river]])-2)) {
       no_diag_out_out <- out_out
       diag(no_diag_out_out) <- 0
+      suppressWarnings(edge_col[n$oel[[edg]]] <- rev(c(no_diag_out_out[edg,]/max(no_diag_out_out))[-seq(edg,1)]))
       # This line is a bit tricky but key for coloring properly the edges according to their value! 
-      edge_col[n$oel[[edg]]] <- rev(c(no_diag_out_out[edg,]/max(no_diag_out_out))[-seq(edg,1)])
     }
     
     n %e% "Con_values" <- edge_col
